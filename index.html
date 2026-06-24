@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<title>Mis Tarjetas</title>
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#1e293b; --card:#1e293b; --card2:#273449;
+    --txt:#e2e8f0; --muted:#94a3b8; --line:#334155;
+    --accent:#38bdf8; --accent2:#0ea5e9;
+    --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,#0b1220,#0f172a); color:var(--txt);
+    min-height:100vh; padding-bottom:90px; font-size:16px; line-height:1.45;
+  }
+  header.top{
+    position:sticky; top:0; z-index:20; backdrop-filter:blur(10px);
+    background:rgba(15,23,42,.85); border-bottom:1px solid var(--line);
+    padding:14px 18px; display:flex; align-items:center; justify-content:space-between;
+  }
+  header.top h1{font-size:18px; margin:0; font-weight:700; letter-spacing:.2px}
+  header.top h1 span{color:var(--accent)}
+  .wrap{max-width:760px; margin:0 auto; padding:18px}
+  h2{font-size:15px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); margin:6px 0 12px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:var(--shadow)}
+  .hero{background:linear-gradient(135deg,#0ea5e9,#2563eb); border:none; color:#fff}
+  .hero .big{font-size:32px; font-weight:800; margin:2px 0}
+  .hero .lbl{opacity:.9; font-size:13px; text-transform:uppercase; letter-spacing:.5px}
+  .hero small{opacity:.85}
+  .rec{display:flex; align-items:center; gap:14px}
+  .rec .chip{width:54px; height:54px; border-radius:14px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; color:#fff}
+  .rec .info{flex:1}
+  .rec .info .name{font-weight:700; font-size:17px}
+  .rec .info .why{color:var(--muted); font-size:13px; margin-top:2px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  @media(min-width:560px){ .grid{grid-template-columns:repeat(3,1fr)} }
+  .mini{background:var(--card2); border-radius:12px; padding:12px; text-align:center}
+  .mini .n{font-size:20px; font-weight:800}
+  .mini .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-top:2px}
+  .tcard{border-radius:14px; padding:14px; margin-bottom:12px; color:#fff; position:relative; overflow:hidden; box-shadow:var(--shadow)}
+  .tcard .bank{font-size:13px; opacity:.85}
+  .tcard .nm{font-size:18px; font-weight:800; margin:2px 0 10px}
+  .tcard .row{display:flex; justify-content:space-between; font-size:13px; margin-top:4px; opacity:.95}
+  .tcard .bar{height:7px; background:rgba(255,255,255,.25); border-radius:6px; margin-top:10px; overflow:hidden}
+  .tcard .bar > i{display:block; height:100%; background:#fff; border-radius:6px}
+  .tcard .acts{position:absolute; top:10px; right:10px; display:flex; gap:6px}
+  .tcard .acts button{background:rgba(0,0,0,.25); border:none; color:#fff; border-radius:8px; padding:5px 8px; font-size:12px; cursor:pointer}
+  .tcard .thead{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+  .tcard .bankwrap{display:flex; align-items:center; gap:8px}
+  .tcard .banklogo{height:22px; display:flex; align-items:center}
+  .tcard .banklogo svg{height:22px; width:auto; display:block}
+  .tcard .redlogo{height:30px; display:flex; align-items:center}
+  .tcard .redlogo svg{height:30px; width:auto; display:block}
+  .tcard .chip svg{height:26px; width:auto; display:block; filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+  .tcard .num{font-family:'Courier New',monospace; letter-spacing:2px; font-size:14px; opacity:.92; margin-top:2px}
+  .tcard .banklogo-img{height:30px; max-width:150px; background:#fff; border-radius:7px; padding:4px 8px; object-fit:contain; display:block}
+  .tcard .bankname{font-weight:800; font-size:17px; color:#fff}
+  .badge{display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; margin-top:8px}
+  .b-ok{background:rgba(34,197,94,.2); color:#86efac}
+  .b-warn{background:rgba(245,158,11,.22); color:#fcd34d}
+  .b-bad{background:rgba(239,68,68,.22); color:#fca5a5}
+  .b-info{background:rgba(56,189,248,.2); color:#7dd3fc}
+  button.primary{background:var(--accent2); color:#fff; border:none; border-radius:12px; padding:13px 16px; font-size:15px; font-weight:700; width:100%; cursor:pointer}
+  button.primary:active{transform:scale(.99)}
+  button.ghost{background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:12px; padding:12px; font-size:14px; width:100%; cursor:pointer; margin-top:8px}
+  label{display:block; font-size:13px; color:var(--muted); margin:12px 0 5px}
+  input,select{width:100%; background:var(--bg2); border:1px solid var(--line); color:var(--txt); border-radius:11px; padding:12px; font-size:16px}
+  input:focus,select:focus{outline:none; border-color:var(--accent)}
+  .field2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .list-item{display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line)}
+  .list-item:last-child{border-bottom:none}
+  .list-item .dot{width:12px;height:12px;border-radius:50%; flex:0 0 auto}
+  .exp-dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;display:inline-block}
+  .exp-logo{width:38px;height:38px;flex:0 0 auto;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:3px}
+  .exp-logo img{max-width:34px;max-height:30px;object-fit:contain}
+  .exp-red{display:inline-block;height:13px;vertical-align:middle;margin-right:2px}
+  .exp-red svg{height:13px;width:auto;vertical-align:middle}
+  .mes-h{font-size:12px;font-weight:800;letter-spacing:.7px;color:var(--accent);margin:14px 2px 6px;padding-top:8px;border-top:1px dashed var(--line)}
+  .mes-h:first-child{margin-top:0;padding-top:0;border-top:none}
+  .fijo-lbl{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-top:5px;cursor:pointer}
+  .fijo-lbl input{width:auto;transform:scale(1.15);accent-color:var(--accent2)}
+  .li-extra{display:flex;align-items:center;gap:12px;margin-top:6px;flex-wrap:wrap}
+  .cat-sel{font-size:11px;padding:4px 7px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);max-width:180px;width:auto}
+  .cuota-pill{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(139,92,246,.25);color:#c4b5fd;vertical-align:middle;margin-left:4px;letter-spacing:.3px}
+  .usd-pill{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(22,163,74,.28);color:#86efac;vertical-align:middle;margin-left:4px}
+  .fijo-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(56,189,248,.25);color:#7dd3fc;vertical-align:middle;margin-left:4px}
+  .rubro-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;cursor:pointer;user-select:none}
+  .rubro-arrow{font-size:10px;color:var(--muted);width:14px;text-align:center;flex:0 0 auto}
+  .rubro-det{background:var(--card2);border-radius:10px;padding:11px 13px;margin:-3px 0 12px}
+  .list-item .li-main{flex:1; min-width:0}
+  .list-item .li-main .t{font-weight:600; font-size:15px}
+  .list-item .li-main .s{font-size:12px; color:var(--muted)}
+  .list-item .amt{font-weight:700; text-align:right; white-space:nowrap}
+  .list-item .del{background:none;border:none;color:var(--bad);font-size:18px;cursor:pointer;padding:4px}
+  .empty{text-align:center; color:var(--muted); padding:30px 10px; font-size:14px}
+  nav.tabs{position:fixed; bottom:0; left:0; right:0; z-index:30; display:flex; background:rgba(15,23,42,.95); backdrop-filter:blur(10px); border-top:1px solid var(--line)}
+  nav.tabs button{flex:1; background:none; border:none; color:var(--muted); padding:9px 2px 11px; font-size:9.5px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0}
+  nav.tabs button .ic{font-size:18px; line-height:1}
+  nav.tabs button.active{color:var(--accent)}
+  .view{display:none}
+  .view.active{display:block}
+  .cal-day{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line)}
+  .cal-day:last-child{border:none}
+  .cal-day .when{width:62px; text-align:center; flex:0 0 auto}
+  .cal-day .when .d{font-size:22px; font-weight:800; line-height:1}
+  .cal-day .when .m{font-size:11px; color:var(--muted); text-transform:uppercase}
+  .cal-month{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:8px 16px 6px; margin-bottom:14px; box-shadow:var(--shadow)}
+  .cal-month-h{font-size:13px; font-weight:800; letter-spacing:.8px; color:var(--accent); margin:8px 2px 4px}
+  .cal-ico{width:48px; height:52px; flex:0 0 auto; border-radius:9px; overflow:hidden; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.35); text-align:center}
+  .cal-ico .top{background:#ef4444; color:#fff; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:3px 0}
+  .cal-ico .dd{color:#0f172a; font-size:24px; font-weight:800; line-height:1; padding:7px 0 5px}
+  .modal{position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center}
+  .modal.open{display:flex}
+  .sheet{background:var(--bg2); width:100%; max-width:560px; border-radius:20px 20px 0 0; padding:20px; max-height:88vh; overflow:auto; box-shadow:var(--shadow)}
+  @media(min-width:560px){ .modal{align-items:center} .sheet{border-radius:20px} }
+  .sheet h3{margin:0 0 4px; font-size:19px}
+  .sheet .sub{color:var(--muted); font-size:13px; margin-bottom:6px}
+  .colors{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+  .colors .sw{width:34px; height:34px; border-radius:10px; cursor:pointer; border:2px solid transparent}
+  .colors .sw.sel{border-color:#fff}
+  .toast{position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:var(--ok); color:#04240f; padding:11px 18px; border-radius:12px; font-weight:700; font-size:14px; z-index:60; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px)}
+  .hint{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.4}
+  .fab{position:fixed; right:18px; bottom:78px; z-index:25; background:var(--accent2); color:#fff; border:none; width:56px; height:56px; border-radius:50%; font-size:28px; box-shadow:var(--shadow); cursor:pointer}
+  .seg{display:flex; background:var(--bg2); border:1px solid var(--line); border-radius:11px; overflow:hidden; margin-bottom:6px}
+  .seg button{flex:1; background:none; border:none; color:var(--muted); padding:10px; font-size:13px; font-weight:600; cursor:pointer}
+  .seg button.on{background:var(--accent2); color:#fff}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" style="position:fixed;inset:0;z-index:300;background:linear-gradient(180deg,#0b1220,#0f172a);display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="max-width:340px;width:100%">
+    <h1 style="text-align:center;font-size:26px;margin:0 0 4px">Mis <span style="color:var(--accent)">Tarjetas</span></h1>
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px">Ingresá para acceder a tus tarjetas</p>
+    <input id="loginEmail" type="email" placeholder="Email" autocomplete="username" style="margin-bottom:10px">
+    <input id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password" style="margin-bottom:14px">
+    <button class="primary" id="loginBtn">Entrar</button>
+    <div id="loginError" style="color:var(--bad);font-size:13px;text-align:center;margin-top:10px"></div>
+    <div id="loginLoading" style="color:var(--muted);font-size:12px;text-align:center;margin-top:14px">Conectando…</div>
+  </div>
+</div>
+
+<header class="top">
+  <h1>Mis <span>Tarjetas</span></h1>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="todayLbl" style="font-size:12px;color:var(--muted)"></span>
+    <button onclick="window.fbLogout && window.fbLogout()" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer">Salir</button>
+  </div>
+</header>
+
+<!-- ===== HOY ===== -->
+<section class="view active" id="v-hoy">
+  <div class="wrap">
+    <div class="card hero">
+      <div class="lbl">A pagar el mes entrante</div>
+      <div class="big" id="nextTotal">$0</div>
+      <small id="nextDetail">Cargá tus tarjetas y consumos para ver la proyección</small>
+      <div id="heroUsd" style="margin-top:13px;background:rgba(0,0,0,.2);border-radius:12px;padding:10px 14px;display:none">
+        <div style="font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:.5px">Equivalente en dólares (BNA)</div>
+        <div style="font-size:23px;font-weight:800;margin-top:2px" id="heroUsdVal">—</div>
+        <div style="font-size:10.5px;opacity:.8;margin-top:2px" id="heroUsdRate"></div>
+      </div>
+    </div>
+
+    <div class="card" id="recuperarCard" style="display:none;border:1px solid #84cc16;background:rgba(132,204,22,.1)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#bef264;font-weight:700">💰 Te tienen que devolver</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Compras que te van a reintegrar</div>
+        </div>
+        <div style="font-size:24px;font-weight:800;color:#bef264;white-space:nowrap;text-align:right" id="recuperarVal">$0</div>
+      </div>
+      <div id="recuperarDet" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(132,204,22,.3);font-size:13px;color:var(--txt)"></div>
+    </div>
+
+    <div class="card" id="balanceCard"></div>
+
+    <h2>Conveniencia</h2>
+    <div class="card" id="recoCard">
+      <div class="empty">Agregá al menos una tarjeta para ver la recomendación 👇</div>
+    </div>
+
+    <h2>Resumen</h2>
+    <div class="grid">
+      <div class="mini"><div class="n" id="mTarjetas">0</div><div class="l">Tarjetas</div></div>
+      <div class="mini"><div class="n" id="mConsumo">$0</div><div class="l">Consumo total</div></div>
+      <div class="mini"><div class="n" id="mFijos">$0</div><div class="l">Fijos / mes</div></div>
+      <div class="mini"><div class="n" id="mProxCierre">—</div><div class="l">Próximo cierre</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TARJETAS ===== -->
+<section class="view" id="v-tarjetas">
+  <div class="wrap">
+    <h2>Mis tarjetas</h2>
+    <div id="listaTarjetas"></div>
+    <button class="primary" onclick="openCardModal()">+ Agregar tarjeta</button>
+  </div>
+</section>
+
+<!-- ===== CONSUMOS ===== -->
+<section class="view" id="v-consumos">
+  <div class="wrap">
+    <h2>Consumos cargados</h2>
+    <label style="margin-top:0">Filtrar por tarjeta</label>
+    <select id="filtroTarjeta" onchange="renderExps()" style="margin-bottom:14px"></select>
+    <div class="card"><div id="listaConsumos"></div></div>
+  </div>
+</section>
+
+<!-- ===== CALENDARIO ===== -->
+<section class="view" id="v-calendario">
+  <div class="wrap">
+    <h2>Próximos cierres y vencimientos</h2>
+    <div id="listaCalendario"><div class="card"><div class="empty">Sin tarjetas todavía.</div></div></div>
+    <p class="hint">El <b>cierre</b> es cuando se arma el resumen. El <b>vencimiento</b> es el día límite para pagarlo sin intereses.</p>
+  </div>
+</section>
+
+<!-- ===== GASTOS FIJOS ===== -->
+<section class="view" id="v-fijos">
+  <div class="wrap">
+    <div class="card hero" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">
+      <div class="lbl">Gastos fijos por mes</div>
+      <div class="big" id="fijosTotalBig">$0</div>
+      <small>Servicios y suscripciones que pagás todos los meses</small>
+    </div>
+    <h2>Detalle de fijos</h2>
+    <div class="card"><div id="listaFijos"></div></div>
+    <p class="hint">Para sumar un fijo: en "Registrar consumo" tildá <b>"Es un gasto fijo mensual"</b>. Sirve para telefonía, internet, streaming, obra social, cuota de la facultad, etc.</p>
+  </div>
+</section>
+
+<!-- ===== PREVISIÓN FUTURA ===== -->
+<section class="view" id="v-prevision">
+  <div class="wrap">
+    <div class="card hero" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">
+      <div class="lbl">Piso del mes que viene</div>
+      <div class="big" id="previsionTotal">$0</div>
+      <small>Tus gastos fijos + las cuotas que caen ese mes</small>
+    </div>
+    <h2>Este mes vs. los que vienen</h2>
+    <div class="card"><div id="listaPrevision"></div></div>
+    <div id="prevTermina"></div>
+    <p class="hint">El <b>piso</b> de cada mes futuro = tus <b>servicios fijos</b> (se repiten siempre) + las <b>cuotas</b> que caen ese mes. "Este mes" muestra todo lo que pagás ahora (incluye consumos de un pago), por eso suele ser más alto. A medida que terminás cuotas, los meses bajan.</p>
+  </div>
+</section>
+
+<!-- ===== CATEGORÍAS / RUBROS ===== -->
+<section class="view" id="v-categorias">
+  <div class="wrap">
+    <div class="card hero" style="background:linear-gradient(135deg,#0891b2,#0e7490)">
+      <div class="lbl">En qué gastás</div>
+      <div class="big" style="font-size:22px">Por categoría</div>
+      <small>Tus consumos clasificados automáticamente</small>
+    </div>
+    <div class="card"><div id="listaCategorias"></div></div>
+    <p class="hint">La app clasifica cada consumo según el comercio. Lo que no reconoce queda en "Otros".</p>
+  </div>
+</section>
+
+
+<!-- ===== NAV ===== -->
+<nav class="tabs">
+  <button class="active" data-v="hoy" onclick="go('hoy')"><span class="ic">📊</span>Hoy</button>
+  <button data-v="tarjetas" onclick="go('tarjetas')"><span class="ic">💳</span>Tarjetas</button>
+  <button data-v="consumos" onclick="go('consumos')"><span class="ic">🧾</span>Consumos</button>
+  <button data-v="fijos" onclick="go('fijos')"><span class="ic">🔁</span>Fijos</button>
+  <button data-v="prevision" onclick="go('prevision')"><span class="ic">📈</span>Futuro</button>
+  <button data-v="categorias" onclick="go('categorias')"><span class="ic">🥧</span>Rubros</button>
+  <button data-v="calendario" onclick="go('calendario')"><span class="ic">📅</span>Calendario</button>
+</nav>
+
+<!-- ===== MODAL TARJETA ===== -->
+<div class="modal" id="cardModal">
+  <div class="sheet">
+    <h3 id="cardModalTitle">Nueva tarjeta</h3>
+    <div class="sub">Datos que aparecen en tu resumen / home banking.</div>
+    <label>Nombre de la tarjeta</label>
+    <input id="f-nombre" placeholder="Ej: Santander" maxlength="28">
+    <div class="field2">
+      <div>
+        <label>Banco</label>
+        <select id="f-banco">
+          <option value="santander">Santander</option>
+          <option value="icbc">ICBC</option>
+          <option value="mercadopago">Mercado Pago</option>
+          <option value="galicia">Galicia</option>
+          <option value="nacion">Banco Nación</option>
+          <option value="bbva">BBVA</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div>
+        <label>Red</label>
+        <select id="f-red">
+          <option value="visa">Visa</option>
+          <option value="mastercard">Mastercard</option>
+          <option value="amex">American Express</option>
+        </select>
+      </div>
+    </div>
+    <label>Últimos 4 dígitos (opcional)</label>
+    <input id="f-ult4" type="text" inputmode="numeric" maxlength="4" placeholder="Ej: 8843">
+    <div class="field2">
+      <div>
+        <label>Día de cierre</label>
+        <input id="f-cierre" type="number" min="1" max="31" placeholder="Ej: 20">
+      </div>
+      <div>
+        <label>Día de vencimiento</label>
+        <input id="f-venc" type="number" min="1" max="31" placeholder="Ej: 10">
+      </div>
+    </div>
+    <label>Límite de crédito (opcional)</label>
+    <input id="f-limite" type="number" min="0" placeholder="Ej: 500000" inputmode="numeric">
+    <div class="field2">
+      <div>
+        <label>Saldo del ciclo actual</label>
+        <input id="f-saldo" type="number" min="0" placeholder="Consumido hasta hoy" inputmode="numeric">
+      </div>
+      <div>
+        <label>Actualizado al</label>
+        <input id="f-saldofecha" type="date">
+      </div>
+    </div>
+    <p class="hint">El "saldo del ciclo" es el <b>Consumido hasta el momento</b> del resumen/Excel del banco. Los consumos que cargues con fecha posterior se suman solos.</p>
+    <label>Color</label>
+    <div class="colors" id="colorPicker"></div>
+    <div style="margin-top:18px">
+      <button class="primary" onclick="saveCard()">Guardar tarjeta</button>
+      <button class="ghost" onclick="closeModal('cardModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CONSUMO ===== -->
+<div class="modal" id="expModal">
+  <div class="sheet">
+    <h3>Registrar consumo</h3>
+    <div class="sub">Cargalo apenas comprás así no se te escapa nada.</div>
+    <label>Tarjeta</label>
+    <select id="e-tarjeta"></select>
+    <div class="field2">
+      <div>
+        <label>Monto total</label>
+        <input id="e-monto" type="number" min="0" placeholder="0" inputmode="numeric">
+      </div>
+      <div>
+        <label>Fecha</label>
+        <input id="e-fecha" type="date">
+      </div>
+    </div>
+    <label>Cuotas</label>
+    <select id="e-cuotas" onchange="setCuotasSel()"></select>
+    <label>Descripción (opcional)</label>
+    <input id="e-desc" placeholder="Ej: Súper Coto" maxlength="40">
+    <label style="display:flex;align-items:center;gap:9px;margin-top:14px;cursor:pointer;color:var(--txt)">
+      <input type="checkbox" id="e-fijo" style="width:auto;transform:scale(1.3)">
+      Es un gasto fijo mensual (servicios, suscripciones, obra social)
+    </label>
+    <div id="e-preview" class="hint"></div>
+    <div style="margin-top:18px">
+      <button class="primary" onclick="saveExp()">Guardar consumo</button>
+      <button class="ghost" onclick="closeModal('expModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= ESTADO ================= */
+const COLORS = ["#6366f1","#0ea5e9","#10b981","#f59e0b","#ef4444","#ec4899","#8b5cf6","#14b8a6","#64748b","#f43f5e"];
+let state = { cards: [], exps: [] };
+
+/* Datos reales tomados de tus resúmenes (saldo del ciclo en curso al 24/06/2026).
+   Actualizá el "saldo del ciclo" de cada tarjeta cuando bajes un resumen/Excel nuevo. */
+const SEED = {
+  cards: [
+    { id:"sant8843", nombre:"Santander",   banco:"santander",  red:"visa",       ult4:"8843", cierre:8,  venc:17, limite:10306000, saldoCiclo:1038552.68, saldoFecha:"2026-06-23", color:"#ec0000" },
+    { id:"amex2849", nombre:"Santander Amex",banco:"santander", red:"amex",       ult4:"2849", cierre:2,  venc:14, limite:7855200,  saldoCiclo:467670.97,  saldoFecha:"2026-06-24", color:"#2e77bc" },
+    { id:"icbc1544", nombre:"ICBC Gold",   banco:"icbc",        red:"mastercard", ult4:"1544", cierre:25, venc:8,  limite:6000000,  saldoCiclo:1542864.71, saldoFecha:"2026-06-24", color:"#c8102e" },
+    { id:"mpago",    nombre:"Mercado Pago", banco:"mercadopago", red:"mastercard", ult4:"",     cierre:5,  venc:10, limite:890000,   saldoCiclo:226793.96,  saldoFecha:"2026-06-24", color:"#009ee3" }
+  ],
+  exps: [
+    { id:"mp1", cardId:"mpago", monto:74999.85, fecha:"2026-06-06", cuotas:1, desc:"Nike Alto Palermo (presencial) · cuota 1/6" },
+    { id:"mp2", cardId:"mpago", monto:26633.33, fecha:"2026-05-30", cuotas:1, desc:"Cooler PC + Ventiladores ARGB · cuota 2/3" },
+    { id:"mp3", cardId:"mpago", monto:8335.94,  fecha:"2026-05-30", cuotas:1, desc:"Cooler PC + Ventiladores ARGB · cuota 2/9" },
+    { id:"mp4", cardId:"mpago", monto:3499.83,  fecha:"2026-05-26", cuotas:1, desc:"Cama pino + Anafe + Pava eléctrica · cuota 2/6" },
+    { id:"mp5", cardId:"mpago", monto:35151.01, fecha:"2026-05-22", cuotas:1, desc:"Colchón Cannon 1 plaza · cuota 2/6" },
+    { id:"mp6", cardId:"mpago", monto:25529.67, fecha:"2026-05-12", cuotas:1, desc:"Soporte doble para monitor · cuota 2/3" },
+    { id:"mp7", cardId:"mpago", monto:18706.33, fecha:"2026-04-30", cuotas:1, desc:"Afeitadora + Cortadora de pelo · cuota 3/3" },
+    { id:"mp8", cardId:"mpago", monto:33938.00, fecha:"2026-04-30", cuotas:1, desc:"Afeitadora + Cortadora de pelo · cuota 3/3" },
+
+    { id:"v1",  cardId:"sant8843", monto:61889.81,  fecha:"2025-10-15", cuotas:1, desc:"Neumáticos Centenario · cuota 9/12" },
+    { id:"v2",  cardId:"sant8843", monto:40000.00,  fecha:"2025-10-15", cuotas:1, desc:"Óptica Güemes · cuota 9/9" },
+    { id:"v3",  cardId:"sant8843", monto:83333.22,  fecha:"2025-10-22", cuotas:1, desc:"Frávega · cuota 9/9" },
+    { id:"v4",  cardId:"sant8843", monto:150519.70, fecha:"2026-02-09", cuotas:1, fijo:true, desc:"Universidad Siglo 21 · cuota 5/6" },
+    { id:"v5",  cardId:"sant8843", monto:21316.66,  fecha:"2026-02-16", cuotas:1, desc:"Portsaid · cuota 5/6" },
+    { id:"v6",  cardId:"sant8843", monto:205680.38, fecha:"2026-06-16", cuotas:1, desc:"Coca-Cola Femsa" },
+    { id:"v7",  cardId:"sant8843", monto:13902.90,  fecha:"2026-06-18", cuotas:1, fijo:true, desc:"HBO Max (débito automático)" },
+    { id:"v8",  cardId:"sant8843", monto:33490.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa Mostaza Haedo" },
+    { id:"v9",  cardId:"sant8843", monto:29780.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa 365 Kiosco" },
+    { id:"v10", cardId:"sant8843", monto:18078.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa Carrefour Exp" },
+    { id:"v11", cardId:"sant8843", monto:161562.01, fecha:"2026-06-17", cuotas:1, desc:"Dis.com promo (adicional Noelia)" },
+    { id:"v12", cardId:"sant8843", monto:219000.00, fecha:"2026-06-17", cuotas:1, desc:"Cigarrillos Online (adicional Noelia)" },
+    { id:"v13", cardId:"sant8843", monto:274878.16, fecha:"2026-06-24", cuotas:1, fijo:true, desc:"Universidad de Morón (adic. Noelia)" },
+
+    { id:"a1", cardId:"amex2849", monto:6333.33,   fecha:"2026-01-11", cuotas:1, desc:"Urban Rail · cuota 6/6" },
+    { id:"a2", cardId:"amex2849", monto:8266.13,   fecha:"2026-02-16", cuotas:1, desc:"Annex NBA · cuota 5/6" },
+    { id:"a3", cardId:"amex2849", monto:201000.00, fecha:"2026-06-01", cuotas:1, desc:"Cigarrillos Online" },
+    { id:"a4", cardId:"amex2849", monto:200908.80, fecha:"2026-06-01", cuotas:1, desc:"Coca-Cola Femsa" },
+    { id:"a5", cardId:"amex2849", monto:51162.71,  fecha:"2026-06-10", cuotas:1, desc:"Dloriot Games" },
+
+    { id:"ic1",  cardId:"icbc1544", monto:173222.11, fecha:"2026-01-10", cuotas:1, desc:"Merpago Tiomusa · cuota 6/9" },
+    { id:"ic2",  cardId:"icbc1544", monto:11216.66,  fecha:"2026-01-18", cuotas:1, desc:"Decathlon · cuota 6/6" },
+    { id:"ic3",  cardId:"icbc1544", monto:23500.00,  fecha:"2026-02-28", cuotas:1, desc:"Decathlon · cuota 4/6" },
+    { id:"ic4",  cardId:"icbc1544", monto:31136.06,  fecha:"2026-04-03", cuotas:1, desc:"Merpago Tienda Gamer · cuota 3/6" },
+    { id:"ic5",  cardId:"icbc1544", monto:28616.66,  fecha:"2026-04-03", cuotas:1, desc:"Tavofranq · cuota 3/3" },
+    { id:"ic6",  cardId:"icbc1544", monto:31783.33,  fecha:"2026-04-05", cuotas:1, desc:"Merpago VER · cuota 3/6" },
+    { id:"ic7",  cardId:"icbc1544", monto:56533.33,  fecha:"2026-04-05", cuotas:1, desc:"Merpago Metas Argentina · cuota 3/3" },
+    { id:"ic8",  cardId:"icbc1544", monto:31111.00,  fecha:"2026-04-05", cuotas:1, desc:"Nike Alto Palermo · cuota 3/9" },
+    { id:"ic9",  cardId:"icbc1544", monto:15013.00,  fecha:"2026-04-11", cuotas:1, desc:"Merpago Tevecompras · cuota 3/9" },
+    { id:"ic10", cardId:"icbc1544", monto:78670.92,  fecha:"2026-05-12", cuotas:1, desc:"Compragamer · cuota 2/6" },
+    { id:"ic11", cardId:"icbc1544", monto:18000.00,  fecha:"2026-05-14", cuotas:1, desc:"Dartagnan · cuota 2/3" },
+    { id:"ic12", cardId:"icbc1544", monto:343001.06, fecha:"2026-05-22", cuotas:1, desc:"Merpago Makro" },
+    { id:"ic13", cardId:"icbc1544", monto:65586.79,  fecha:"2026-05-28", cuotas:1, fijo:true, desc:"Movistar Hogar" },
+    { id:"ic14", cardId:"icbc1544", monto:28333.20,  fecha:"2026-05-30", cuotas:1, desc:"Merpago New Era · cuota 1/6" },
+    { id:"ic15", cardId:"icbc1544", monto:18333.20,  fecha:"2026-05-30", cuotas:1, desc:"Merpago Yagmour · cuota 1/6" },
+    { id:"ic16", cardId:"icbc1544", monto:59600.00,  fecha:"2026-05-30", cuotas:1, desc:"Portsaid · cuota 1/3" },
+    { id:"ic17", cardId:"icbc1544", monto:27900.00,  fecha:"2026-06-03", cuotas:1, desc:"Suplemento perros Cartílago Forte (Mercado Libre)" },
+    { id:"ic18", cardId:"icbc1544", monto:39993.34,  fecha:"2026-06-03", cuotas:1, desc:"LadyStork Cartera · cuota 1/3" },
+    { id:"ic19", cardId:"icbc1544", monto:34897.50,  fecha:"2026-06-03", cuotas:1, desc:"Merpago Rappi" },
+    { id:"ic20", cardId:"icbc1544", monto:7863.79,   fecha:"2026-06-04", cuotas:1, fijo:true, desc:"DLO Prime Video" },
+    { id:"ic21", cardId:"icbc1544", monto:213952.02, fecha:"2026-06-05", cuotas:1, desc:"Merpago Makro" },
+    { id:"ic22", cardId:"icbc1544", monto:11953.00,  fecha:"2026-05-20", cuotas:1, desc:"PedidosYa Market (adic. Noelia)" },
+    { id:"ic23", cardId:"icbc1544", monto:54189.45,  fecha:"2026-06-02", cuotas:1, desc:"PedidosYa Market (adic. Noelia)" },
+    { id:"ic24", cardId:"icbc1544", monto:400.00,    fecha:"2026-06-02", cuotas:1, desc:"PedidosYa propina (adic. Noelia)" },
+    { id:"ic25", cardId:"icbc1544", monto:1098.30,   fecha:"2026-06-02", cuotas:1, desc:"PedidosYa Extra (adic. Noelia)" },
+    { id:"ic26", cardId:"icbc1544", monto:13609.00,  fecha:"2026-06-17", cuotas:1, desc:"PedidosYa Haedo (adic. Noelia)" },
+    { id:"ic27", cardId:"icbc1544", monto:23129.00,  fecha:"2026-06-17", cuotas:1, desc:"PedidosYa KFC (adic. Noelia)" },
+    { id:"ic28", cardId:"icbc1544", monto:14658.00,  fecha:"2026-06-18", cuotas:1, fijo:true, desc:"Personal (adic. Noelia)" },
+    { id:"ic29", cardId:"icbc1544", monto:20194.99,  fecha:"2026-06-18", cuotas:1, fijo:true, desc:"Personal (adic. Noelia)" },
+    { id:"ic30", cardId:"icbc1544", monto:15509.00,  fecha:"2026-06-18", cuotas:1, desc:"PedidosYa Panchería (adic. Noelia)" },
+    { id:"ic31", cardId:"icbc1544", monto:25009.00,  fecha:"2026-06-18", cuotas:1, desc:"PedidosYa Starbucks (adic. Noelia)" },
+    { id:"ic32", cardId:"icbc1544", monto:24851.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa Carrefour (adic. Noelia)" },
+
+    { id:"u1",  cardId:"icbc1544", monto:14.31, fecha:"2026-05-21", cuotas:1, usd:true, desc:"Google Ads" },
+    { id:"u2",  cardId:"icbc1544", monto:14.21, fecha:"2026-05-26", cuotas:1, usd:true, desc:"Google Ads" },
+    { id:"u3",  cardId:"icbc1544", monto:7.67,  fecha:"2026-06-01", cuotas:1, usd:true, desc:"Google Ads" },
+    { id:"u4",  cardId:"icbc1544", monto:4.79,  fecha:"2026-06-02", cuotas:1, usd:true, desc:"YouTube Premium" },
+    { id:"u5",  cardId:"icbc1544", monto:13.96, fecha:"2026-06-04", cuotas:1, usd:true, desc:"Google Ads" },
+    { id:"u6",  cardId:"icbc1544", monto:13.86, fecha:"2026-06-06", cuotas:1, usd:true, desc:"Google Ads" },
+    { id:"u7",  cardId:"icbc1544", monto:14.00, fecha:"2026-06-11", cuotas:1, usd:true, desc:"Google Ads" },
+    { id:"u8",  cardId:"icbc1544", monto:13.99, fecha:"2026-06-16", cuotas:1, usd:true, desc:"Google Ads" },
+    { id:"u9",  cardId:"icbc1544", monto:20.00, fecha:"2026-06-18", cuotas:1, usd:true, desc:"OpenAI ChatGPT" },
+    { id:"u10", cardId:"icbc1544", monto:13.81, fecha:"2026-06-19", cuotas:1, usd:true, desc:"Google Ads" }
+  ]
+};
+
+let editingCardId = null;
+let pickedColor = COLORS[0];
+let pickedCuotas = 1;
+
+const fmt = n => "$" + Math.round(n).toLocaleString("es-AR");
+const fmtUSD = n => "U$S " + n.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+let dolarVenta = 1495, dolarFecha = "";   // cotización dólar BNA (se actualiza en vivo)
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const MESES_L = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+/* ================= DÓLAR BNA ================= */
+function actualizarHeroUsd(){
+  const box = document.getElementById("heroUsd");
+  if(!box) return;
+  const nm = nextMonthTotal();
+  const usdTotal = state.exps.filter(e=>e.usd).reduce((s,e)=>s+e.monto,0);
+  if(nm.total<=0 && usdTotal<=0){ box.style.display="none"; return; }
+  const totalUsd = nm.total/dolarVenta + usdTotal;
+  box.style.display = "block";
+  document.getElementById("heroUsdVal").textContent = fmtUSD(totalUsd);
+  document.getElementById("heroUsdRate").textContent =
+    `Cotización hoy: dólar BNA $${dolarVenta.toLocaleString("es-AR")}${dolarFecha?" ("+dolarFecha+")":""}`;
+}
+async function fetchDolar(){
+  try{
+    const r = await fetch("https://dolarapi.com/v1/dolares/oficial");
+    const j = await r.json();
+    if(j && j.venta){
+      dolarVenta = j.venta;
+      if(j.fechaActualizacion) dolarFecha = j.fechaActualizacion.slice(0,10).split("-").reverse().join("/");
+    }
+  }catch(e){ /* sin internet: uso el valor de respaldo */ }
+  actualizarHeroUsd();
+}
+
+/* ================= PERSISTENCIA ================= */
+function load(){
+  try{
+    const raw = localStorage.getItem("misTarjetas_v12");
+    state = raw ? JSON.parse(raw) : SEED;
+  }catch(e){ state = SEED; }
+  // Aplicar cambios manuales (rubros y fijos) guardados aparte: sobreviven a las actualizaciones
+  try{
+    const ov = JSON.parse(localStorage.getItem("misTarjetas_ov")||"{}");
+    state.exps.forEach(e=>{ const o=ov[e.id]; if(o){ if("cat" in o) e.cat=o.cat; if("fijo" in o) e.fijo=o.fijo; } });
+  }catch(e){}
+  save();
+}
+function save(){
+  try{
+    localStorage.setItem("misTarjetas_v12", JSON.stringify(state));
+    // Guardar los cambios manuales por consumo (id estable) para que no se pierdan al actualizar
+    const ov = {};
+    state.exps.forEach(e=>{ if(e.cat!=null || typeof e.fijo==="boolean"){ ov[e.id]={cat:e.cat||null, fijo:!!e.fijo}; } });
+    localStorage.setItem("misTarjetas_ov", JSON.stringify(ov));
+    // Sincronizar a la nube (si está logueado), salvo que el cambio venga de la nube
+    if(window.cloudSave && !window._remoto) window.cloudSave(state);
+  }catch(e){ /* no se pudo guardar */ }
+}
+// Puentes para la sincronización con Firebase (definida en el módulo de abajo)
+window.getState = function(){ return state; };
+window.cloudApply = function(d){
+  if(d && Array.isArray(d.cards)){
+    state = { cards: d.cards, exps: Array.isArray(d.exps)?d.exps:[] };
+    window._remoto = true;
+    save();
+    window._remoto = false;
+    render();
+  }
+};
+
+/* ================= FECHAS / CICLOS ================= */
+// Clampa un día (ej 31) al último día válido del mes
+function clampDay(year, month, day){
+  const last = new Date(year, month+1, 0).getDate();
+  return new Date(year, month, Math.min(day, last));
+}
+// Próxima fecha de cierre a partir de "from" (incluyendo hoy)
+function nextClose(closeDay, from){
+  let d = clampDay(from.getFullYear(), from.getMonth(), closeDay);
+  if(d < startOfDay(from)) d = clampDay(from.getFullYear(), from.getMonth()+1, closeDay);
+  return d;
+}
+function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function daysBetween(a,b){ return Math.round((startOfDay(b)-startOfDay(a))/86400000); }
+
+// Dada una fecha de cierre, calcula el vencimiento asociado.
+// El vencimiento es el día "vencDay" en el mes del cierre si vencDay>closeDay,
+// si no, en el mes siguiente.
+function dueForClose(closeDate, closeDay, vencDay){
+  if(vencDay > closeDay){
+    return clampDay(closeDate.getFullYear(), closeDate.getMonth(), vencDay);
+  }
+  return clampDay(closeDate.getFullYear(), closeDate.getMonth()+1, vencDay);
+}
+
+// Para un consumo en fecha "buy", ¿en qué cierre cae la cuota número k (0-based)?
+function closeForInstallment(buy, closeDay, k){
+  // primer cierre estricto posterior o igual a la compra
+  let first = clampDay(buy.getFullYear(), buy.getMonth(), closeDay);
+  if(first < startOfDay(buy)) first = clampDay(buy.getFullYear(), buy.getMonth()+1, closeDay);
+  // sumar k meses
+  return clampDay(first.getFullYear(), first.getMonth()+k, closeDay);
+}
+
+/* ================= CÁLCULOS ================= */
+// Genera, para cada tarjeta, el mapa de vencimiento -> monto a pagar
+function buildSchedule(){
+  const now = new Date();
+  const schedule = {}; // key: cardId -> [{due, close, amount}]
+  state.cards.forEach(c => schedule[c.id] = {});
+  state.exps.forEach(e => {
+    const card = state.cards.find(c => c.id === e.cardId);
+    if(!card) return;
+    const buy = new Date(e.fecha + "T00:00:00");
+    const n = Math.max(1, e.cuotas||1);
+    const per = e.monto / n;
+    for(let k=0;k<n;k++){
+      const close = closeForInstallment(buy, card.cierre, k);
+      const due = dueForClose(close, card.cierre, card.venc);
+      const key = due.getFullYear()+"-"+due.getMonth();
+      if(!schedule[card.id][key]) schedule[card.id][key] = {due, close, amount:0, items:0};
+      schedule[card.id][key].amount += per;
+      schedule[card.id][key].items++;
+    }
+  });
+  return schedule;
+}
+
+// Consumos sueltos cargados DESPUÉS de la fecha del saldo, que caen en el ciclo que cierra próximo
+function nuevosDelCiclo(card){
+  const close = nextClose(card.cierre, new Date());
+  const sf = card.saldoFecha ? startOfDay(new Date(card.saldoFecha+"T00:00:00")) : null;
+  let sum = 0;
+  state.exps.forEach(e=>{
+    if(e.cardId!==card.id) return;
+    if(e.usd) return;                                  // los dólares se cuentan aparte
+    const buy = new Date(e.fecha+"T00:00:00");
+    if(sf && startOfDay(buy) <= sf) return;           // ya incluido en el saldo del ciclo
+    const c0 = closeForInstallment(buy, card.cierre, 0);
+    if(c0.getTime() === close.getTime()) sum += e.monto/Math.max(1,e.cuotas||1);
+  });
+  return sum;
+}
+
+// A pagar en el PRÓXIMO vencimiento de la tarjeta = saldo del ciclo (Excel) + consumos nuevos del día
+function committedBalance(card){
+  return (card.saldoCiclo||0) + nuevosDelCiclo(card);
+}
+// alias usado en la vista (lo consumido del ciclo en curso)
+function currentCycleUsage(card){ return committedBalance(card); }
+
+// Lo que se paga "el mes entrante": suma del próximo vencimiento de cada tarjeta
+function nextMonthTotal(){
+  let total = 0; const detail = [];
+  state.cards.forEach(c => {
+    const monto = committedBalance(c);
+    const close = nextClose(c.cierre, new Date());
+    const due = dueForClose(close, c.cierre, c.venc);
+    total += monto;
+    if(monto>0) detail.push({card:c, due, close, amount:monto});
+  });
+  return {total, detail};
+}
+
+/* ================= RECOMENDADOR ================= */
+function recommend(){
+  if(!state.cards.length) return null;
+  const now = new Date();
+  const scored = state.cards.map(c=>{
+    const close = nextClose(c.cierre, now);            // próximo cierre
+    const due = dueForClose(close, c.cierre, c.venc);  // su vencimiento
+    const diasCierre = daysBetween(now, close);
+    const diasFin = daysBetween(now, due);             // financiación si comprás HOY
+    // Si esperás a que cierre y comprás apenas pasa el cierre: cae en el ciclo siguiente
+    const close2 = clampDay(close.getFullYear(), close.getMonth()+1, c.cierre);
+    const due2 = dueForClose(close2, c.cierre, c.venc);
+    const finSiEsperas = daysBetween(now, due2);
+    const disp = c.limite ? Math.max(0, c.limite - committedBalance(c)) : null;
+    return {card:c, close, due, diasCierre, diasFin, finSiEsperas, disp};
+  });
+  scored.sort((a,b)=> b.diasFin - a.diasFin);   // mejor para comprar HOY = más días de financiación
+  return scored;
+}
+
+/* ================= RENDER ================= */
+function render(){
+  const now = new Date();
+  document.getElementById("todayLbl").textContent =
+    now.getDate()+" "+MESES[now.getMonth()];
+  const schedule = buildSchedule();
+
+  // Hero: próximo mes
+  const nm = nextMonthTotal();
+  const usdTotal = state.exps.filter(e=>e.usd).reduce((s,e)=>s+e.monto,0);
+  document.getElementById("nextTotal").innerHTML = fmt(nm.total) + (usdTotal>0?` <span style="font-size:16px;opacity:.9;font-weight:700">+ ${fmtUSD(usdTotal)}</span>`:"");
+  if(nm.detail.length){
+    const soonest = nm.detail.slice().sort((a,b)=>a.due-b.due)[0];
+    document.getElementById("nextDetail").innerHTML =
+      "Primer vencimiento: "+redLogoMini(soonest.card.red)+" "+escapeHtml(soonest.card.nombre)+" el "+soonest.due.getDate()+" de "+MESES_L[soonest.due.getMonth()];
+  } else {
+    document.getElementById("nextDetail").textContent = state.cards.length ? "Sin consumos cargados todavía" : "Cargá tus tarjetas y consumos para ver la proyección";
+  }
+  actualizarHeroUsd();
+
+  // Desglose visual: cuánto pagás el mes entrante por tarjeta
+  const bc = document.getElementById("balanceCard");
+  if(nm.detail.length){
+    bc.style.display = "block";
+    const maxA = Math.max(...nm.detail.map(d=>d.amount));
+    const sorted = nm.detail.slice().sort((a,b)=> b.amount - a.amount);
+    bc.innerHTML = `<h2 style="margin:2px 0 14px">Pago del mes por tarjeta</h2>` + sorted.map(d=>{
+      const w = maxA>0 ? Math.max(4, Math.round(d.amount/maxA*100)) : 0;
+      const pct = nm.total>0 ? Math.round(d.amount/nm.total*100) : 0;
+      const usdCard = state.exps.filter(e=>e.usd && e.cardId===d.card.id).reduce((s,e)=>s+e.monto,0);
+      return `<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+        ${expLogo(d.card)}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:14px;margin-bottom:5px">
+            <span>${redLogoMini(d.card.red)} <b>${escapeHtml(d.card.nombre)}</b> <span style="color:var(--muted)">· vence ${d.due.getDate()}/${d.due.getMonth()+1}</span></span>
+            <b style="font-size:15px">${fmt(d.amount)}</b>
+          </div>
+          <div style="height:12px;background:var(--card2);border-radius:7px;overflow:hidden">
+            <i style="display:block;height:100%;width:${w}%;background:linear-gradient(90deg,${d.card.color},${shade(d.card.color,25)});border-radius:7px"></i>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${pct}% del total${usdCard>0?` · <span style="color:#22c55e">+ ${fmtUSD(usdCard)}</span>`:""}</div>
+        </div>
+      </div>`;
+    }).join("") + `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="font-size:14px;color:var(--muted)">TOTAL del mes</span>
+        <b style="font-size:20px;color:var(--accent)">${fmt(nm.total)}${usdTotal>0?` <span style="font-size:14px;color:#22c55e">+ ${fmtUSD(usdTotal)}</span>`:""}</b>
+      </div>`;
+  } else {
+    bc.style.display = "none";
+  }
+
+  // A recuperar: consumos del rubro Ferretería
+  const recExps = state.exps.filter(e=>categoria(e).recuperar);
+  const recP = recExps.filter(e=>!e.usd).reduce((s,e)=>s+e.monto,0);
+  const recU = recExps.filter(e=> e.usd).reduce((s,e)=>s+e.monto,0);
+  const rcard = document.getElementById("recuperarCard");
+  if(rcard){
+    if(recP>0 || recU>0){
+      rcard.style.display="block";
+      let txt = recP>0 ? fmt(recP) : "";
+      if(recU>0) txt += (txt?" + ":"") + fmtUSD(recU);
+      document.getElementById("recuperarVal").textContent = txt;
+      // Detalle agrupado por comercio (suma los repetidos)
+      const grupos={};
+      recExps.forEach(e=>{
+        const pq = parseCuota(e.desc);
+        const nombre = pq.limpia || "Consumo";
+        const k = nombre + (e.usd?"|u":"|p");
+        if(!grupos[k]) grupos[k]={nombre, usd:e.usd, monto:0, n:0, cuota: pq.act?(pq.act+"/"+pq.tot):null};
+        grupos[k].monto += e.monto; grupos[k].n++;
+        if(grupos[k].n>1) grupos[k].cuota=null;   // si hay varios, no es una sola cuota
+      });
+      const det=document.getElementById("recuperarDet");
+      if(det) det.innerHTML = Object.values(grupos).sort((a,b)=>b.monto-a.monto).map(g=>{
+        const cant = g.n>1 ? ` <span style="color:#a3a3a3">×${g.n}</span>` : "";
+        const pill = g.cuota ? ` <span class="cuota-pill">Cuota ${g.cuota}</span>` : "";
+        const val = g.usd ? fmtUSD(g.monto) : fmt(g.monto);
+        return `<div style="display:flex;justify-content:space-between;gap:10px;padding:4px 0"><span>${escapeHtml(g.nombre)}${cant}${pill}</span><b style="color:#d9f99d;white-space:nowrap">${val}</b></div>`;
+      }).join("");
+    } else rcard.style.display="none";
+  }
+
+  // Recomendación
+  const reco = recommend();
+  const rc = document.getElementById("recoCard");
+  if(reco && reco.length){
+    const best = reco[0];
+    const c = best.card;
+    let why = `Si comprás <b>hoy</b>, es la mejor: tenés ~<b>${best.diasFin} días</b> para pagarla (vence ${best.due.getDate()}/${best.due.getMonth()+1}).`;
+    if(best.disp!==null) why += ` Disponible: ${fmt(best.disp)}.`;
+    // ¿Conviene esperar a que cierre otra tarjeta para ganar financiación?
+    const espera = reco
+      .filter(s=> s.card.id!==c.id && s.diasCierre<=3 && s.finSiEsperas > best.diasFin + 5)
+      .sort((a,b)=> b.finSiEsperas - a.finSiEsperas)[0];
+    let tip = "";
+    if(espera){
+      const ec = espera.card;
+      const cuando = espera.diasCierre===0?"hoy":espera.diasCierre===1?"mañana":"en "+espera.diasCierre+" días";
+      tip = `<div style="margin-top:12px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.5">
+        💡 <b style="color:#fbbf24">Conviene esperar:</b> ${redLogoMini(ec.red)} <b>${escapeHtml(ec.nombre)}</b> cierra <b>${cuando}</b> (${espera.close.getDate()}/${espera.close.getMonth()+1}). Si la compra no es urgente, usala <b>apenas cierre</b>: ganás ~<b>${espera.finSiEsperas} días</b> de financiación en vez de ${best.diasFin}.
+      </div>`;
+    }
+    rc.innerHTML = `
+      <div class="rec">
+        ${expLogo(c)}
+        <div class="info">
+          <div class="name" style="display:flex;align-items:center;gap:8px">${escapeHtml(c.nombre)} ${redLogoMini(c.red)}</div>
+          <div class="why">${why}</div>
+        </div>
+      </div>${tip}`;
+  } else {
+    rc.innerHTML = `<div class="empty">Agregá al menos una tarjeta para ver la recomendación 👇</div>`;
+  }
+
+  // Minis
+  document.getElementById("mTarjetas").textContent = state.cards.length;
+  let consumoTotal=0;
+  state.cards.forEach(c=>{ consumoTotal += committedBalance(c); });
+  document.getElementById("mConsumo").textContent = fmt(consumoTotal);
+  let fijosTotal=0; state.exps.forEach(e=>{ if(e.fijo && !e.usd) fijosTotal += e.monto; });
+  document.getElementById("mFijos").textContent = fmt(fijosTotal);
+  const allCloses = state.cards.map(c=>({c, close:nextClose(c.cierre, now), d:daysBetween(now,nextClose(c.cierre,now))})).sort((a,b)=>a.close-b.close);
+  document.getElementById("mProxCierre").textContent = allCloses.length ? (allCloses[0].d===0?"hoy":allCloses[0].d+"d") : "—";
+
+  renderCards();
+  renderExps();
+  renderFijos();
+  renderPrevision();
+  renderCategorias();
+  renderCalendar(schedule);
+}
+
+// Categorías y palabras clave para clasificar consumos automáticamente
+const CATEGORIAS = [
+  {id:"super",   nombre:"Supermercado",        color:"#22c55e", kw:["makro","coto","carrefour","changomas","vea","disco","dia ","coca","femsa","almacen","almacén"]},
+  {id:"gastro",  nombre:"Gastronomía / Delivery", color:"#f59e0b", kw:["pedidosya","rappi","mostaza","kfc","starbucks","dartagnan","panch","resto","bar "]},
+  {id:"subs",    nombre:"Suscripciones / Digital", color:"#0ea5e9", kw:["hbo","prime","youtube","openai","chatgpt","google","netflix","spotify","dlo","games","dloriot","appstore","apple"]},
+  {id:"telco",   nombre:"Telefonía / Internet", color:"#6366f1", kw:["movistar","personal","telecom","claro","flow","fibertel"]},
+  {id:"edu",     nombre:"Educación",            color:"#8b5cf6", kw:["universidad","siglo","moron","morón","empresari"]},
+  {id:"ropa",    nombre:"Indumentaria / Deporte", color:"#ec4899", kw:["nike","portsaid","yagmour","new era","newera","decathlon","dexter","adidas","ver "]},
+  {id:"tecno",   nombre:"Tecnología / Hogar",   color:"#14b8a6", kw:["compragamer","gamer","tevecompras","cooler","ventilador","argb","monitor","fravega","frávega","cama","anafe","pava","colch","soporte","afeitadora","cortadora"]},
+  {id:"auto",    nombre:"Auto",                 color:"#ef4444", kw:["neumatico","neumático","centenari","ypf","shell","axion"]},
+  {id:"salud",   nombre:"Salud",                color:"#10b981", kw:["optica","óptica","guemes","güemes","farmacity","farmacia"]},
+  {id:"ocio",    nombre:"Ocio / Cigarrillos",   color:"#b45309", kw:["cigarrillos","cigarrillosonline","urban rail","annex","nba","casino","quiniela","loteria","lotería"]},
+  {id:"ferreteria", nombre:"Ferretería (a recuperar)", color:"#84cc16", recuperar:true, kw:["ferreteria","ferretería"]},
+  {id:"viejos",  nombre:"Mis viejos (a recuperar)", color:"#facc15", recuperar:true, kw:[]},
+  {id:"otros",   nombre:"Otros",                color:"#64748b", kw:[]}
+];
+function categoria(e){
+  if(e.cat){ const c=CATEGORIAS.find(x=>x.id===e.cat); if(c) return c; }   // override manual
+  const d = (e.desc||"").toLowerCase();
+  for(const cat of CATEGORIAS){ if(cat.kw.some(k=>d.includes(k))) return cat; }
+  return CATEGORIAS[CATEGORIAS.length-1];
+}
+function setCat(id, catId){
+  const e = state.exps.find(x=>x.id===id);
+  if(e){ e.cat = catId || null; save(); render(); }
+}
+function renderCategorias(){
+  const el = document.getElementById("listaCategorias");
+  if(!el) return;
+  const porCat = {};
+  state.exps.forEach(e=>{
+    if(e.usd) return;
+    const cat = categoria(e);
+    if(!porCat[cat.id]) porCat[cat.id] = {cat, monto:0, cuotif:0, unpago:0, items:[]};
+    const g = porCat[cat.id];
+    g.monto += e.monto; g.items.push(e);
+    if(parseCuota(e.desc).act) g.cuotif += e.monto; else g.unpago += e.monto;
+  });
+  const cats = Object.values(porCat).sort((a,b)=>b.monto-a.monto);
+  const total = cats.reduce((s,g)=>s+g.monto,0);
+  if(!total){ el.innerHTML = `<div class="empty">Sin consumos para analizar.</div>`; return; }
+  let acc=0;
+  const stops = cats.map(g=>{ const from=acc/total*100; acc+=g.monto; const to=acc/total*100; return `${g.cat.color} ${from}% ${to}%`; }).join(",");
+  const filas = cats.map(g=>{
+    const pct = Math.round(g.monto/total*100);
+    const items = g.items.slice().sort((a,b)=>b.monto-a.monto).map(e=>{
+      const pq = parseCuota(e.desc);
+      const tag = pq.act ? ` <span class="cuota-pill">Cuota ${pq.act}/${pq.tot}</span>` : "";
+      return `<div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line)"><span>${escapeHtml(pq.limpia)}${tag}</span><b style="white-space:nowrap">${fmt(e.monto)}</b></div>`;
+    }).join("");
+    return `<div class="rubro-row" onclick="toggleRubro('${g.cat.id}')">
+        <span style="width:13px;height:13px;border-radius:3px;background:${g.cat.color};flex:0 0 auto"></span>
+        <span style="flex:1;font-size:13px">${g.cat.nombre}</span>
+        <b style="font-size:13px">${fmt(g.monto)}</b>
+        <span style="font-size:11px;color:var(--muted);width:36px;text-align:right">${pct}%</span>
+        <span class="rubro-arrow" id="arr-${g.cat.id}">▾</span>
+      </div>
+      <div class="rubro-det" id="rubro-${g.cat.id}" style="display:none">
+        <div style="display:flex;gap:16px;font-size:12px;margin-bottom:8px;flex-wrap:wrap">
+          <span>📅 En cuotas: <b style="color:#c4b5fd">${fmt(g.cuotif)}</b></span>
+          <span>💵 Un pago: <b>${fmt(g.unpago)}</b></span>
+        </div>
+        ${items}
+      </div>`;
+  }).join("");
+  el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:18px">
+      <div style="width:180px;height:180px;border-radius:50%;background:conic-gradient(${stops});box-shadow:0 4px 14px rgba(0,0,0,.3);flex:0 0 auto"></div>
+      <div style="width:100%">${filas}</div>
+    </div>
+    <p class="hint" style="text-align:center;margin-top:4px">Tocá un rubro para ver el detalle 👆</p>`;
+}
+function toggleRubro(id){
+  const d = document.getElementById("rubro-"+id);
+  const a = document.getElementById("arr-"+id);
+  if(!d) return;
+  const abrir = d.style.display==="none";
+  d.style.display = abrir ? "block" : "none";
+  if(a) a.textContent = abrir ? "▴" : "▾";
+}
+
+function renderPrevision(){
+  const big = document.getElementById("previsionTotal");
+  const el  = document.getElementById("listaPrevision");
+  const term= document.getElementById("prevTermina");
+  const now = new Date();
+  // Piso: servicios fijos recurrentes (fijos que NO son cuotas)
+  let pisoFijo = 0;
+  state.exps.forEach(e=>{ if(e.fijo && !e.usd && !parseCuota(e.desc).act) pisoFijo += e.monto; });
+  // Cuotas futuras por mes + cuotas en curso + cuotas en su última cuota
+  const cuotasMes = {}; const enCurso = []; const ultima = [];
+  state.exps.forEach(e=>{
+    if(e.usd) return;
+    const pq = parseCuota(e.desc); if(!pq.act) return;
+    const act = parseInt(pq.act,10), tot = parseInt(pq.tot,10), rest = tot-act;
+    if(rest>0){
+      for(let k=1;k<=rest;k++){ const dt=new Date(now.getFullYear(),now.getMonth()+k,1); const key=dt.getFullYear()+"-"+String(dt.getMonth()).padStart(2,"0"); cuotasMes[key]=(cuotasMes[key]||0)+e.monto; }
+      enCurso.push({desc:pq.limpia, monto:e.monto, act, tot, rest});
+    } else if(rest===0){
+      ultima.push({desc:pq.limpia, monto:e.monto, act, tot});
+    }
+  });
+  // Mes actual: total a pagar real de este ciclo
+  let mesActual=0; state.cards.forEach(c=> mesActual += committedBalance(c));
+  // Filas: este mes + próximos 6
+  const filas=[{label:"Este mes", fijo:0, cuotas:0, total:mesActual, actual:true}];
+  for(let k=1;k<=6;k++){
+    const dt=new Date(now.getFullYear(),now.getMonth()+k,1);
+    const key=dt.getFullYear()+"-"+String(dt.getMonth()).padStart(2,"0");
+    const cuotas=cuotasMes[key]||0;
+    const lbl=MESES[dt.getMonth()].charAt(0).toUpperCase()+MESES[dt.getMonth()].slice(1)+" "+String(dt.getFullYear()).slice(2);
+    filas.push({label:lbl, fijo:pisoFijo, cuotas, total:pisoFijo+cuotas});
+  }
+  const max=Math.max(...filas.map(f=>f.total),1);
+  if(big) big.textContent = fmt(filas[1].total);
+  if(!el) return;
+  const leyenda=`<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:14px">
+    <span><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#6366f1;vertical-align:middle"></span> Fijos</span>
+    <span><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#8b5cf6;vertical-align:middle"></span> Cuotas</span>
+    <span><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#f59e0b;vertical-align:middle"></span> Este mes (todo)</span>
+  </div>`;
+  el.innerHTML = leyenda + filas.map(f=>{
+    const fijoW=Math.round(f.fijo/max*100), cuotasW=Math.round(f.cuotas/max*100), actW=Math.max(4,Math.round(f.total/max*100));
+    const inner = f.actual
+      ? `<i style="display:block;height:100%;width:${actW}%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:7px"></i>`
+      : `<i style="height:100%;width:${fijoW}%;background:#6366f1;float:left"></i><i style="height:100%;width:${cuotasW}%;background:#8b5cf6;float:left"></i>`;
+    const det = f.actual ? "" : `<div style="font-size:10.5px;color:var(--muted);margin-top:3px">Fijos ${fmt(f.fijo)} · Cuotas ${fmt(f.cuotas)}</div>`;
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><b${f.actual?' style="color:#fbbf24"':''}>${f.label}</b><b>${fmt(f.total)}</b></div>
+      <div style="height:14px;background:var(--card2);border-radius:7px;overflow:hidden">${inner}</div>
+      ${det}
+    </div>`;
+  }).join("");
+  // Cajas de cuotas
+  if(term){
+    let html="";
+    if(enCurso.length){
+      enCurso.sort((a,b)=>a.rest-b.rest);   // las que terminan antes, primero
+      const totCurso = enCurso.reduce((s,t)=>s+t.monto,0);
+      html += `<h2 style="margin-top:18px">Cuotas en curso</h2><div class="card">`+enCurso.map(t=>{
+        return `<div class="list-item">
+          <div class="li-main"><div class="t">${escapeHtml(t.desc)} <span class="cuota-pill">Cuota ${t.act}/${t.tot}</span></div>
+          <div class="s">Te faltan <b>${t.rest}</b> cuota${t.rest===1?"":"s"} de ${t.tot}</div></div>
+          <div class="amt">${fmt(t.monto)}<div style="font-size:10px;color:var(--muted);font-weight:400">por cuota</div></div>
+        </div>`;
+      }).join("")+`<div class="list-item" style="border-top:2px solid var(--line)"><div class="li-main"><div class="t" style="font-weight:700">Total por mes en estas cuotas</div></div><div class="amt" style="color:var(--accent)">${fmt(totCurso)}</div></div></div>`;
+    }
+    if(ultima.length){
+      const totUlt = ultima.reduce((s,t)=>s+t.monto,0);
+      html += `<h2 style="margin-top:18px">Última cuota (se terminan este mes) 🎉</h2><div class="card">`+ultima.map(t=>{
+        return `<div class="list-item">
+          <div class="li-main"><div class="t">${escapeHtml(t.desc)} <span class="cuota-pill">${t.act}/${t.tot}</span></div>
+          <div class="s" style="color:var(--ok)">Pagás la última cuota y queda saldado</div></div>
+          <div class="amt">${fmt(t.monto)}</div>
+        </div>`;
+      }).join("")+`<div class="list-item" style="border-top:2px solid var(--line)"><div class="li-main"><div class="t" style="font-weight:700">Total que dejás de pagar</div></div><div class="amt" style="color:var(--ok)">${fmt(totUlt)}</div></div></div>`;
+    }
+    term.innerHTML = html;
+  }
+}
+
+function renderFijos(){
+  const big = document.getElementById("fijosTotalBig");
+  const el = document.getElementById("listaFijos");
+  const fijos = state.exps.filter(e=>e.fijo);
+  let totalP=0, totalU=0;
+  fijos.forEach(e=>{ if(e.usd) totalU+=e.monto; else totalP+=e.monto; });
+  if(big) big.innerHTML = fmt(totalP) + (totalU>0?` <span style="font-size:16px;opacity:.9;font-weight:700">+ ${fmtUSD(totalU)}</span>`:"");
+  if(!el) return;
+  if(!fijos.length){ el.innerHTML = `<div class="empty">No marcaste gastos fijos todavía.</div>`; return; }
+  const sorted = fijos.slice().sort((a,b)=> b.monto - a.monto);
+  el.innerHTML = sorted.map(e=>{
+    const c = state.cards.find(x=>x.id===e.cardId);
+    const pq = parseCuota(e.desc);
+    return `<div class="list-item">
+      ${expLogo(c)}
+      <div class="li-main">
+        <div class="t">${escapeHtml(pq.limpia||"Consumo")}${e.usd?' <span class="usd-pill">USD</span>':""}</div>
+        <div class="s">${c?redLogoMini(c.red)+" "+escapeHtml(c.nombre):""}</div>
+      </div>
+      <div class="amt">${e.usd?fmtUSD(e.monto):fmt(e.monto)}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderCards(){
+  const el = document.getElementById("listaTarjetas");
+  if(!state.cards.length){ el.innerHTML = `<div class="card"><div class="empty">Todavía no agregaste ninguna tarjeta.</div></div>`; return; }
+  const now = new Date();
+  el.innerHTML = state.cards.map(c=>{
+    const comprometido = committedBalance(c);
+    const nuevos = nuevosDelCiclo(c);
+    const close = nextClose(c.cierre, now);
+    const due = dueForClose(close, c.cierre, c.venc);
+    const dC = daysBetween(now, close);
+    const dV = daysBetween(now, due);
+    const txtC = dC===0?"hoy":"faltan "+dC+"d";
+    const txtV = dV===0?"hoy":"faltan "+dV+"d";
+    const pct = c.limite ? Math.min(100, Math.round(comprometido/c.limite*100)) : null;
+    let badge;
+    if(dC<=0) badge = `<span class="badge b-bad">Cierra hoy</span>`;
+    else if(dC<=3) badge = `<span class="badge b-warn">Cierra en ${dC}d</span>`;
+    else badge = `<span class="badge b-info">Cierra en ${dC}d</span>`;
+    const saldoLbl = c.saldoFecha ? `Saldo del ciclo (al ${c.saldoFecha.slice(8,10)}/${c.saldoFecha.slice(5,7)})` : "Saldo del ciclo";
+    return `<div class="tcard" style="background:linear-gradient(135deg,${c.color},${shade(c.color,-25)})">
+      ${tcardHead(c,true)}
+      <div class="chip">${chipSVG()}</div>
+      <div class="num">${c.ult4?("•••• •••• •••• "+escapeHtml(c.ult4)):"•••• •••• •••• ••••"}</div>
+      <div class="row" style="margin-top:10px"><span>Cierre día ${c.cierre} <span style="opacity:.8">(${txtC})</span></span><span>Vence día ${c.venc} <span style="opacity:.8">(${txtV})</span></span></div>
+      <div class="row"><span>A pagar (vence ${due.getDate()}/${due.getMonth()+1})</span><b>${fmt(comprometido)}</b></div>
+      <div class="row"><span>${saldoLbl}</span><span>${fmt(c.saldoCiclo||0)}</span></div>
+      ${nuevos>0?`<div class="row"><span>+ consumos del día</span><span>${fmt(nuevos)}</span></div>`:""}
+      ${c.limite?`<div class="row"><span>Disponible</span><b>${fmt(Math.max(0,c.limite-comprometido))}</b></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>`:""}
+      <div style="margin-top:8px">${badge}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderExps(){
+  const el = document.getElementById("listaConsumos");
+  const sel = document.getElementById("filtroTarjeta");
+  if(sel){
+    const prev = sel.value || "todas";
+    sel.innerHTML = `<option value="todas">Todas las tarjetas</option>` +
+      state.cards.map(c=>`<option value="${c.id}">${escapeHtml(c.nombre)}${c.ult4?(" ••"+escapeHtml(c.ult4)):""}</option>`).join("");
+    sel.value = [...sel.options].some(o=>o.value===prev) ? prev : "todas";
+  }
+  const filtro = sel ? sel.value : "todas";
+  let list = state.exps.slice();
+  if(filtro!=="todas") list = list.filter(e=>e.cardId===filtro);
+  if(!list.length){ el.innerHTML = `<div class="empty">${state.exps.length?"No hay consumos para esta tarjeta.":"No registraste consumos."}</div>`; return; }
+  const sorted = list.sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
+  const groups = {};
+  sorted.forEach(e=>{ const d=new Date(e.fecha+"T00:00:00"); const k=d.getFullYear()+"-"+String(d.getMonth()).padStart(2,"0"); (groups[k]=groups[k]||[]).push(e); });
+  el.innerHTML = Object.keys(groups).sort().reverse().map(k=>{
+    const m = parseInt(k.split("-")[1],10), y = k.split("-")[0];
+    const itemsHtml = groups[k].map(e=>{
+      const c = state.cards.find(x=>x.id===e.cardId);
+      const d = new Date(e.fecha+"T00:00:00");
+      const pq = parseCuota(e.desc);
+      const pastilla = pq.act ? ` <span class="cuota-pill">Cuota ${pq.act}/${pq.tot}</span>` : "";
+      const usdBadge = e.usd ? ` <span class="usd-pill">USD</span>` : "";
+      const cat = categoria(e);
+      const fijoTag = e.fijo ? ' <span class="fijo-tag">🔁 Fijo</span>' : "";
+      return `<div class="list-item" style="border-left:4px solid ${cat.color};padding-left:11px${e.fijo?';background:rgba(56,189,248,.08)':''}">
+        ${expLogo(c)}
+        <div class="li-main">
+          <div class="t">${escapeHtml(pq.limpia||"Consumo")}${pastilla}${usdBadge}${fijoTag}</div>
+          <div class="s">${c?redLogoMini(c.red)+" "+escapeHtml(c.nombre)+" · ":""}${d.getDate()} ${MESES[d.getMonth()]} · <span style="color:${cat.color}">${cat.nombre}</span></div>
+          <div class="li-extra">
+            <label class="fijo-lbl"><input type="checkbox" ${e.fijo?"checked":""} onchange="toggleFijo('${e.id}')"> Fijo</label>
+            <select class="cat-sel" onchange="setCat('${e.id}', this.value)">
+              ${CATEGORIAS.map(co=>`<option value="${co.id}"${co.id===cat.id?" selected":""}>${co.nombre}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div class="amt"${e.usd?' style="color:#22c55e"':''}>${e.usd?fmtUSD(e.monto):fmt(e.monto)}</div>
+      </div>`;
+    }).join("");
+    return `<div class="mes-h">${MESES_L[m].toUpperCase()} ${y}</div>${itemsHtml}`;
+  }).join("");
+}
+
+function renderCalendar(schedule){
+  const el = document.getElementById("listaCalendario");
+  const now = startOfDay(new Date());
+  const events = [];
+  state.cards.forEach(c=>{
+    // próximos 3 cierres
+    let close = nextClose(c.cierre, new Date());
+    for(let i=0;i<2;i++){
+      const due = dueForClose(close, c.cierre, c.venc);
+      const key = due.getFullYear()+"-"+due.getMonth();
+      const bucket = (schedule[c.id]||{})[key];
+      let amount = bucket?bucket.amount:0;
+      if(i===0) amount = committedBalance(c);   // próximo vencimiento: saldo del ciclo + consumos del día
+      events.push({date:close, type:"cierre", card:c});
+      events.push({date:due, type:"venc", card:c, amount});
+      close = clampDay(close.getFullYear(), close.getMonth()+1, c.cierre);
+    }
+  });
+  const upcoming = events.filter(e=>e.date>=now).sort((a,b)=>a.date-b.date);
+  if(!upcoming.length){ el.innerHTML = `<div class="card"><div class="empty">Sin tarjetas todavía.</div></div>`; return; }
+  // agrupar por mes
+  const groups = {};
+  upcoming.forEach(e=>{ const k=e.date.getFullYear()+"-"+String(e.date.getMonth()).padStart(2,"0"); (groups[k]=groups[k]||[]).push(e); });
+  el.innerHTML = Object.keys(groups).sort().map(k=>{
+    const m = parseInt(k.split("-")[1],10), y = k.split("-")[0];
+    const evs = groups[k];
+    return `<div class="cal-month">
+      <div class="cal-month-h">${MESES_L[m].toUpperCase()} ${y}</div>
+      ${evs.map(e=>{
+        const dias = daysBetween(now, e.date);
+        const cuando = dias===0?"hoy":dias===1?"mañana":"en "+dias+" días";
+        const tag = e.type==="cierre"
+          ? `<span class="badge b-info">Cierre</span>`
+          : `<span class="badge b-warn">Vence${e.amount?" · "+fmt(e.amount):""}</span>`;
+        return `<div class="cal-day">
+          <div class="cal-ico"><div class="top">${MESES[e.date.getMonth()]}</div><div class="dd">${e.date.getDate()}</div></div>
+          <div class="li-main">
+            <div class="t">${redLogoMini(e.card.red)} ${escapeHtml(e.card.nombre)}</div>
+            <div class="s">${cuando}</div>
+          </div>
+          <div>${tag}</div>
+        </div>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+}
+
+/* ================= HELPERS UI ================= */
+function initials(name){ return name.replace(/[^A-Za-zÀ-ÿ ]/g,"").split(" ").filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join(""); }
+
+/* ---- Logos (SVG inline, funcionan sin internet) ---- */
+function chipSVG(){
+  return `<svg viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="1" width="38" height="28" rx="5" fill="#e6c574"/>
+    <rect x="1" y="1" width="38" height="28" rx="5" fill="none" stroke="#b8941f" stroke-width="1"/>
+    <line x1="14" y1="1" x2="14" y2="29" stroke="#b8941f" stroke-width="1"/>
+    <line x1="26" y1="1" x2="26" y2="29" stroke="#b8941f" stroke-width="1"/>
+    <line x1="1" y1="10" x2="39" y2="10" stroke="#b8941f" stroke-width="1"/>
+    <line x1="1" y1="20" x2="39" y2="20" stroke="#b8941f" stroke-width="1"/>
+  </svg>`;
+}
+function redLogo(red){
+  if(red==="visa"){
+    return `<svg viewBox="0 0 100 32" xmlns="http://www.w3.org/2000/svg"><text x="50" y="26" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="bold" font-style="italic" fill="#ffffff" style="letter-spacing:1px">VISA</text></svg>`;
+  }
+  if(red==="mastercard"){
+    return `<svg viewBox="0 0 52 32" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="16" r="14" fill="#EB001B"/><circle cx="32" cy="16" r="14" fill="#F79E1B" fill-opacity="0.88"/></svg>`;
+  }
+  if(red==="amex"){
+    return `<svg viewBox="0 0 60 32" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="32" rx="4" fill="#2E77BC"/><text x="30" y="21" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="bold" fill="#ffffff">AMEX</text></svg>`;
+  }
+  return "";
+}
+// Logos reales por banco (URL elegidas por el usuario). Si no cargan, cae al nombre en texto.
+const LOGOS = {
+  santander:   "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Santanderrio_logo.svg/3840px-Santanderrio_logo.svg.png",
+  icbc:        "https://upload.wikimedia.org/wikipedia/commons/6/69/ICBC_Argentina.png",
+  mercadopago: "https://static.vecteezy.com/system/resources/previews/067/065/678/non_2x/mercadopago-logo-square-rounded-mercadopago-logo-free-download-mercadopago-logo-free-png.png"
+};
+function bankLogo(c){
+  const name = escapeHtml(c.nombre);
+  const url = LOGOS[c.banco||""];
+  if(url){
+    return `<img class="banklogo-img" src="${url}" alt="${name}" onerror="this.onerror=null;this.outerHTML='<span class=&quot;bankname&quot;>${name}</span>'">`;
+  }
+  return `<span class="bankname">${name}</span>`;
+}
+// Mini logo de banco para listas (imagen en cuadrito blanco; si no hay, punto de color)
+function expLogo(c){
+  if(!c) return `<span class="exp-dot" style="background:#64748b"></span>`;
+  const url = LOGOS[c.banco||""];
+  if(url) return `<span class="exp-logo"><img src="${url}" alt="${escapeHtml(c.nombre)}" onerror="this.parentNode.outerHTML='<span class=&quot;exp-dot&quot; style=&quot;background:${c.color}&quot;></span>'"></span>`;
+  return `<span class="exp-dot" style="background:${c.color}"></span>`;
+}
+// Logo de red (Visa/MC/Amex) en tamaño chico para inline
+function redLogoMini(red){
+  const svg = redLogo(red);
+  return svg ? `<span class="exp-red">${svg}</span>` : "";
+}
+function tcardHead(c, withActs){
+  const acts = withActs ? `<div class="acts"><button onclick="openCardModal('${c.id}')">✏️</button><button onclick="delCard('${c.id}')">🗑️</button></div>` : "";
+  return `${acts}<div class="thead"><div class="bankwrap"><span class="banklogo">${bankLogo(c)}</span></div><span class="redlogo">${redLogo(c.red)}</span></div>`;
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+function shade(hex, pct){
+  const n = parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r=Math.max(0,Math.min(255,r+r*pct/100));
+  g=Math.max(0,Math.min(255,g+g*pct/100));
+  b=Math.max(0,Math.min(255,b+b*pct/100));
+  return "#"+[r,g,b].map(v=>Math.round(v).toString(16).padStart(2,"0")).join("");
+}
+function go(v){
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+  document.getElementById("v-"+v).classList.add("active");
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("active", b.dataset.v===v));
+  window.scrollTo(0,0);
+}
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+let toastT;
+function toast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+/* ================= TARJETAS CRUD ================= */
+function renderColorPicker(){
+  const el=document.getElementById("colorPicker");
+  el.innerHTML = COLORS.map(c=>`<div class="sw ${c===pickedColor?'sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`).join("");
+}
+function pickColor(c){ pickedColor=c; renderColorPicker(); }
+function openCardModal(id){
+  editingCardId = id||null;
+  if(id){
+    const c=state.cards.find(x=>x.id===id);
+    document.getElementById("cardModalTitle").textContent="Editar tarjeta";
+    document.getElementById("f-nombre").value=c.nombre;
+    document.getElementById("f-banco").value=c.banco||"otro";
+    document.getElementById("f-red").value=c.red||"visa";
+    document.getElementById("f-ult4").value=c.ult4||"";
+    document.getElementById("f-cierre").value=c.cierre;
+    document.getElementById("f-venc").value=c.venc;
+    document.getElementById("f-limite").value=c.limite||"";
+    document.getElementById("f-saldo").value=c.saldoCiclo||"";
+    document.getElementById("f-saldofecha").value=c.saldoFecha||new Date().toISOString().slice(0,10);
+    pickedColor=c.color;
+  } else {
+    document.getElementById("cardModalTitle").textContent="Nueva tarjeta";
+    document.getElementById("f-nombre").value="";
+    document.getElementById("f-banco").value="santander";
+    document.getElementById("f-red").value="visa";
+    document.getElementById("f-ult4").value="";
+    document.getElementById("f-cierre").value="";
+    document.getElementById("f-venc").value="";
+    document.getElementById("f-limite").value="";
+    document.getElementById("f-saldo").value="";
+    document.getElementById("f-saldofecha").value=new Date().toISOString().slice(0,10);
+    pickedColor=COLORS[state.cards.length % COLORS.length];
+  }
+  renderColorPicker();
+  openModal("cardModal");
+}
+function saveCard(){
+  const nombre=document.getElementById("f-nombre").value.trim();
+  const banco=document.getElementById("f-banco").value;
+  const red=document.getElementById("f-red").value;
+  const ult4=document.getElementById("f-ult4").value.replace(/\D/g,"").slice(0,4);
+  const cierre=parseInt(document.getElementById("f-cierre").value);
+  const venc=parseInt(document.getElementById("f-venc").value);
+  const limite=parseFloat(document.getElementById("f-limite").value)||0;
+  const saldoCiclo=parseFloat(document.getElementById("f-saldo").value)||0;
+  const saldoFecha=document.getElementById("f-saldofecha").value||"";
+  if(!nombre){ alert("Ponele un nombre a la tarjeta."); return; }
+  if(!(cierre>=1&&cierre<=31)){ alert("El día de cierre tiene que ser entre 1 y 31."); return; }
+  if(!(venc>=1&&venc<=31)){ alert("El día de vencimiento tiene que ser entre 1 y 31."); return; }
+  if(editingCardId){
+    const c=state.cards.find(x=>x.id===editingCardId);
+    Object.assign(c,{nombre,banco,red,ult4,cierre,venc,limite,saldoCiclo,saldoFecha,color:pickedColor});
+    toast("Tarjeta actualizada");
+  } else {
+    state.cards.push({id:uid(),nombre,banco,red,ult4,cierre,venc,limite,saldoCiclo,saldoFecha,color:pickedColor});
+    toast("Tarjeta agregada");
+  }
+  save(); render(); closeModal("cardModal");
+}
+function delCard(id){
+  const c=state.cards.find(x=>x.id===id);
+  if(!confirm("¿Borrar \""+c.nombre+"\" y sus consumos?")) return;
+  state.cards=state.cards.filter(x=>x.id!==id);
+  state.exps=state.exps.filter(e=>e.cardId!==id);
+  save(); render(); toast("Tarjeta borrada");
+}
+
+/* ================= CONSUMOS CRUD ================= */
+function fillCuotas(){
+  const s=document.getElementById("e-cuotas");
+  if(!s) return;
+  s.innerHTML = Array.from({length:18},(_,i)=>i+1).map(n=>`<option value="${n}">${n===1?"1 pago":n+" cuotas"}</option>`).join("");
+}
+function setCuotas(n){
+  pickedCuotas=n;
+  const s=document.getElementById("e-cuotas");
+  if(s) s.value=n;
+  updateExpPreview();
+}
+function setCuotasSel(){
+  pickedCuotas = parseInt(document.getElementById("e-cuotas").value)||1;
+  updateExpPreview();
+}
+function fillCardSelect(){
+  const sel=document.getElementById("e-tarjeta");
+  sel.innerHTML = state.cards.map(c=>`<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+}
+function openExpModal(){
+  if(!state.cards.length){ alert("Primero agregá una tarjeta."); go("tarjetas"); return; }
+  fillCardSelect();
+  document.getElementById("e-monto").value="";
+  document.getElementById("e-desc").value="";
+  document.getElementById("e-fijo").checked=false;
+  document.getElementById("e-fecha").value=new Date().toISOString().slice(0,10);
+  fillCuotas();
+  setCuotas(1);
+  // recomendar tarjeta por defecto
+  const reco=recommend();
+  if(reco&&reco.length) document.getElementById("e-tarjeta").value=reco[0].card.id;
+  updateExpPreview();
+  openModal("expModal");
+}
+function updateExpPreview(){
+  const monto=parseFloat(document.getElementById("e-monto").value)||0;
+  const p=document.getElementById("e-preview");
+  if(monto>0&&pickedCuotas>1){ p.textContent=`${pickedCuotas} cuotas de ${fmt(monto/pickedCuotas)} c/u.`; }
+  else p.textContent="";
+}
+function saveExp(){
+  const cardId=document.getElementById("e-tarjeta").value;
+  const monto=parseFloat(document.getElementById("e-monto").value);
+  const fecha=document.getElementById("e-fecha").value;
+  const desc=document.getElementById("e-desc").value.trim();
+  const fijo=document.getElementById("e-fijo").checked;
+  if(!cardId){ alert("Elegí una tarjeta."); return; }
+  if(!(monto>0)){ alert("Poné un monto válido."); return; }
+  if(!fecha){ alert("Elegí la fecha."); return; }
+  state.exps.push({id:uid(),cardId,monto,fecha,cuotas:pickedCuotas,fijo,desc});
+  save(); render(); closeModal("expModal"); toast("Consumo registrado");
+}
+function delExp(id){
+  state.exps=state.exps.filter(e=>e.id!==id);
+  save(); render(); toast("Consumo borrado");
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function toggleFijo(id){
+  const e = state.exps.find(x=>x.id===id);
+  if(e){ e.fijo = !e.fijo; save(); render(); }
+}
+// Extrae "cuota X/Y" de la descripción y devuelve la desc limpia
+function parseCuota(desc){
+  const m = (desc||"").match(/cuota\s*(\d+)\s*\/\s*(\d+)/i);
+  if(m) return {act:m[1], tot:m[2], limpia:(desc.replace(/[·\-\s]*cuota\s*\d+\s*\/\s*\d+/i,"").trim()||"Consumo")};
+  return {act:null, tot:null, limpia:desc};
+}
+
+/* ================= INIT ================= */
+document.getElementById("e-monto") && document.addEventListener("input", e=>{ if(e.target.id==="e-monto") updateExpPreview(); });
+// cerrar modal tocando fondo
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click", e=>{ if(e.target===m) m.classList.remove("open"); }));
+
+load();
+render();
+fetchDolar();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAt_ik_iBviNt8NLMyBeKAtsBLXzfmQjR4",
+    authDomain: "mis-tarjetas-d7fbb.firebaseapp.com",
+    projectId: "mis-tarjetas-d7fbb",
+    storageBucket: "mis-tarjetas-d7fbb.firebasestorage.app",
+    messagingSenderId: "893904861434",
+    appId: "1:893904861434:web:e2cd741b64fbb4fa74f143"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const ref = doc(db, "app", "datos");
+  let unsub = null, primera = true;
+  const $ = id => document.getElementById(id);
+
+  // El script principal llama esto al guardar; lo subimos a la nube
+  window.cloudSave = async function(st){
+    try{
+      const ov = JSON.parse(localStorage.getItem("misTarjetas_ov")||"{}");
+      await setDoc(ref, { cards: st.cards||[], exps: st.exps||[], ov, updatedAt: Date.now() });
+    }catch(e){ console.warn("cloudSave", e); }
+  };
+
+  $("loginLoading").textContent = "";
+  $("loginBtn").addEventListener("click", login);
+  $("loginPass").addEventListener("keydown", e=>{ if(e.key==="Enter") login(); });
+  async function login(){
+    $("loginError").textContent = "";
+    const email = $("loginEmail").value.trim(), pass = $("loginPass").value;
+    if(!email || !pass){ $("loginError").textContent = "Completá email y contraseña."; return; }
+    $("loginBtn").textContent = "Entrando…"; $("loginBtn").disabled = true;
+    try{ await signInWithEmailAndPassword(auth, email, pass); }
+    catch(e){ $("loginError").textContent = "Email o contraseña incorrectos."; }
+    $("loginBtn").textContent = "Entrar"; $("loginBtn").disabled = false;
+  }
+
+  onAuthStateChanged(auth, (user)=>{
+    if(user){
+      $("loginScreen").style.display = "none";
+      if(unsub) unsub();
+      unsub = onSnapshot(ref, (snap)=>{
+        if(snap.exists()){ window.cloudApply(snap.data()); }
+        else if(primera){ window.cloudSave(window.getState()); }  // 1ra vez: subo lo de este dispositivo
+        primera = false;
+      }, (err)=>{ console.warn("sync", err); });
+    } else {
+      $("loginScreen").style.display = "flex";
+    }
+  });
+  window.fbLogout = ()=> signOut(auth);
+</script>
+</body>
+</html>
+
