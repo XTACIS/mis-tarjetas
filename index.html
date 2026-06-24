@@ -1341,12 +1341,26 @@ fetchDolar();
   let unsub = null, primera = true;
   const $ = id => document.getElementById(id);
 
+  // Cartelito de estado de sincronización (visible en pantalla)
+  function syncMsg(txt, error){
+    let el = document.getElementById("syncMsg");
+    if(!el){ el = document.createElement("div"); el.id="syncMsg";
+      el.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:74px;z-index:400;padding:9px 14px;border-radius:10px;font-size:12px;font-weight:600;max-width:92%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.4)";
+      document.body.appendChild(el); }
+    el.textContent = txt;
+    el.style.background = error ? "#7f1d1d" : "#064e3b";
+    el.style.color = "#fff"; el.style.display = "block";
+    clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.display="none"; }, error?20000:2500);
+  }
+
   // El script principal llama esto al guardar; lo subimos a la nube
   window.cloudSave = async function(st){
     try{
       const ov = JSON.parse(localStorage.getItem("misTarjetas_ov")||"{}");
-      await setDoc(ref, { cards: st.cards||[], exps: st.exps||[], ov, updatedAt: Date.now() });
-    }catch(e){ console.warn("cloudSave", e); }
+      const data = JSON.parse(JSON.stringify({ cards: st.cards||[], exps: st.exps||[], ov, updatedAt: Date.now() }));
+      await setDoc(ref, data);
+      syncMsg("Sincronizado ✓", false);
+    }catch(e){ syncMsg("Error al guardar: " + ((e && (e.code||e.message)) || e), true); }
   };
 
   $("loginLoading").textContent = "";
@@ -1370,7 +1384,7 @@ fetchDolar();
         if(snap.exists()){ window.cloudApply(snap.data()); }
         else if(primera){ window.cloudSave(window.getState()); }  // 1ra vez: subo lo de este dispositivo
         primera = false;
-      }, (err)=>{ console.warn("sync", err); });
+      }, (err)=>{ syncMsg("Error de lectura: " + ((err && (err.code||err.message)) || err), true); });
     } else {
       $("loginScreen").style.display = "flex";
     }
