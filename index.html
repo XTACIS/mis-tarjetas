@@ -383,90 +383,9 @@
 const COLORS = ["#6366f1","#0ea5e9","#10b981","#f59e0b","#ef4444","#ec4899","#8b5cf6","#14b8a6","#64748b","#f43f5e"];
 let state = { cards: [], exps: [] };
 
-/* Datos reales tomados de tus resúmenes (saldo del ciclo en curso al 24/06/2026).
-   Actualizá el "saldo del ciclo" de cada tarjeta cuando bajes un resumen/Excel nuevo. */
-const SEED = {
-  cards: [
-    { id:"sant8843", nombre:"Santander",   banco:"santander",  red:"visa",       ult4:"8843", cierre:8,  venc:17, limite:10306000, saldoCiclo:1038552.68, saldoFecha:"2026-06-23", color:"#ec0000" },
-    { id:"amex2849", nombre:"Santander Amex",banco:"santander", red:"amex",       ult4:"2849", cierre:2,  venc:14, limite:7855200,  saldoCiclo:467670.97,  saldoFecha:"2026-06-24", color:"#2e77bc" },
-    { id:"icbc1544", nombre:"ICBC Gold",   banco:"icbc",        red:"mastercard", ult4:"1544", cierre:25, venc:8,  limite:6000000,  saldoCiclo:1542864.71, saldoFecha:"2026-06-24", color:"#c8102e" },
-    { id:"mpago",    nombre:"Mercado Pago", banco:"mercadopago", red:"mastercard", ult4:"",     cierre:5,  venc:10, limite:890000,   saldoCiclo:226793.96,  saldoFecha:"2026-06-24", color:"#009ee3" }
-  ],
-  exps: [
-    { id:"mp1", cardId:"mpago", monto:74999.85, fecha:"2026-06-06", cuotas:1, desc:"Nike Alto Palermo (presencial) · cuota 1/6" },
-    { id:"mp2", cardId:"mpago", monto:26633.33, fecha:"2026-05-30", cuotas:1, desc:"Cooler PC + Ventiladores ARGB · cuota 2/3" },
-    { id:"mp3", cardId:"mpago", monto:8335.94,  fecha:"2026-05-30", cuotas:1, desc:"Cooler PC + Ventiladores ARGB · cuota 2/9" },
-    { id:"mp4", cardId:"mpago", monto:3499.83,  fecha:"2026-05-26", cuotas:1, desc:"Cama pino + Anafe + Pava eléctrica · cuota 2/6" },
-    { id:"mp5", cardId:"mpago", monto:35151.01, fecha:"2026-05-22", cuotas:1, desc:"Colchón Cannon 1 plaza · cuota 2/6" },
-    { id:"mp6", cardId:"mpago", monto:25529.67, fecha:"2026-05-12", cuotas:1, desc:"Soporte doble para monitor · cuota 2/3" },
-    { id:"mp7", cardId:"mpago", monto:18706.33, fecha:"2026-04-30", cuotas:1, desc:"Afeitadora + Cortadora de pelo · cuota 3/3" },
-    { id:"mp8", cardId:"mpago", monto:33938.00, fecha:"2026-04-30", cuotas:1, desc:"Afeitadora + Cortadora de pelo · cuota 3/3" },
-
-    { id:"v1",  cardId:"sant8843", monto:61889.81,  fecha:"2025-10-15", cuotas:1, desc:"Neumáticos Centenario · cuota 9/12" },
-    { id:"v2",  cardId:"sant8843", monto:40000.00,  fecha:"2025-10-15", cuotas:1, desc:"Óptica Güemes · cuota 9/9" },
-    { id:"v3",  cardId:"sant8843", monto:83333.22,  fecha:"2025-10-22", cuotas:1, desc:"Frávega · cuota 9/9" },
-    { id:"v4",  cardId:"sant8843", monto:150519.70, fecha:"2026-02-09", cuotas:1, fijo:true, desc:"Universidad Siglo 21 · cuota 5/6" },
-    { id:"v5",  cardId:"sant8843", monto:21316.66,  fecha:"2026-02-16", cuotas:1, desc:"Portsaid · cuota 5/6" },
-    { id:"v6",  cardId:"sant8843", monto:205680.38, fecha:"2026-06-16", cuotas:1, desc:"Coca-Cola Femsa" },
-    { id:"v7",  cardId:"sant8843", monto:13902.90,  fecha:"2026-06-18", cuotas:1, fijo:true, desc:"HBO Max (débito automático)" },
-    { id:"v8",  cardId:"sant8843", monto:33490.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa Mostaza Haedo" },
-    { id:"v9",  cardId:"sant8843", monto:29780.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa 365 Kiosco" },
-    { id:"v10", cardId:"sant8843", monto:18078.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa Carrefour Exp" },
-    { id:"v11", cardId:"sant8843", monto:161562.01, fecha:"2026-06-17", cuotas:1, desc:"Dis.com promo (adicional Noelia)" },
-    { id:"v12", cardId:"sant8843", monto:219000.00, fecha:"2026-06-17", cuotas:1, desc:"Cigarrillos Online (adicional Noelia)" },
-    { id:"v13", cardId:"sant8843", monto:274878.16, fecha:"2026-06-24", cuotas:1, fijo:true, desc:"Universidad de Morón (adic. Noelia)" },
-
-    { id:"a1", cardId:"amex2849", monto:6333.33,   fecha:"2026-01-11", cuotas:1, desc:"Urban Rail · cuota 6/6" },
-    { id:"a2", cardId:"amex2849", monto:8266.13,   fecha:"2026-02-16", cuotas:1, desc:"Annex NBA · cuota 5/6" },
-    { id:"a3", cardId:"amex2849", monto:201000.00, fecha:"2026-06-01", cuotas:1, desc:"Cigarrillos Online" },
-    { id:"a4", cardId:"amex2849", monto:200908.80, fecha:"2026-06-01", cuotas:1, desc:"Coca-Cola Femsa" },
-    { id:"a5", cardId:"amex2849", monto:51162.71,  fecha:"2026-06-10", cuotas:1, desc:"Dloriot Games" },
-
-    { id:"ic1",  cardId:"icbc1544", monto:173222.11, fecha:"2026-01-10", cuotas:1, desc:"Merpago Tiomusa · cuota 6/9" },
-    { id:"ic2",  cardId:"icbc1544", monto:11216.66,  fecha:"2026-01-18", cuotas:1, desc:"Decathlon · cuota 6/6" },
-    { id:"ic3",  cardId:"icbc1544", monto:23500.00,  fecha:"2026-02-28", cuotas:1, desc:"Decathlon · cuota 4/6" },
-    { id:"ic4",  cardId:"icbc1544", monto:31136.06,  fecha:"2026-04-03", cuotas:1, desc:"Merpago Tienda Gamer · cuota 3/6" },
-    { id:"ic5",  cardId:"icbc1544", monto:28616.66,  fecha:"2026-04-03", cuotas:1, desc:"Tavofranq · cuota 3/3" },
-    { id:"ic6",  cardId:"icbc1544", monto:31783.33,  fecha:"2026-04-05", cuotas:1, desc:"Merpago VER · cuota 3/6" },
-    { id:"ic7",  cardId:"icbc1544", monto:56533.33,  fecha:"2026-04-05", cuotas:1, desc:"Merpago Metas Argentina · cuota 3/3" },
-    { id:"ic8",  cardId:"icbc1544", monto:31111.00,  fecha:"2026-04-05", cuotas:1, desc:"Nike Alto Palermo · cuota 3/9" },
-    { id:"ic9",  cardId:"icbc1544", monto:15013.00,  fecha:"2026-04-11", cuotas:1, desc:"Merpago Tevecompras · cuota 3/9" },
-    { id:"ic10", cardId:"icbc1544", monto:78670.92,  fecha:"2026-05-12", cuotas:1, desc:"Compragamer · cuota 2/6" },
-    { id:"ic11", cardId:"icbc1544", monto:18000.00,  fecha:"2026-05-14", cuotas:1, desc:"Dartagnan · cuota 2/3" },
-    { id:"ic12", cardId:"icbc1544", monto:343001.06, fecha:"2026-05-22", cuotas:1, desc:"Merpago Makro" },
-    { id:"ic13", cardId:"icbc1544", monto:65586.79,  fecha:"2026-05-28", cuotas:1, fijo:true, desc:"Movistar Hogar" },
-    { id:"ic14", cardId:"icbc1544", monto:28333.20,  fecha:"2026-05-30", cuotas:1, desc:"Merpago New Era · cuota 1/6" },
-    { id:"ic15", cardId:"icbc1544", monto:18333.20,  fecha:"2026-05-30", cuotas:1, desc:"Merpago Yagmour · cuota 1/6" },
-    { id:"ic16", cardId:"icbc1544", monto:59600.00,  fecha:"2026-05-30", cuotas:1, desc:"Portsaid · cuota 1/3" },
-    { id:"ic17", cardId:"icbc1544", monto:27900.00,  fecha:"2026-06-03", cuotas:1, desc:"Suplemento perros Cartílago Forte (Mercado Libre)" },
-    { id:"ic18", cardId:"icbc1544", monto:39993.34,  fecha:"2026-06-03", cuotas:1, desc:"LadyStork Cartera · cuota 1/3" },
-    { id:"ic19", cardId:"icbc1544", monto:34897.50,  fecha:"2026-06-03", cuotas:1, desc:"Merpago Rappi" },
-    { id:"ic20", cardId:"icbc1544", monto:7863.79,   fecha:"2026-06-04", cuotas:1, fijo:true, desc:"DLO Prime Video" },
-    { id:"ic21", cardId:"icbc1544", monto:213952.02, fecha:"2026-06-05", cuotas:1, desc:"Merpago Makro" },
-    { id:"ic22", cardId:"icbc1544", monto:11953.00,  fecha:"2026-05-20", cuotas:1, desc:"PedidosYa Market (adic. Noelia)" },
-    { id:"ic23", cardId:"icbc1544", monto:54189.45,  fecha:"2026-06-02", cuotas:1, desc:"PedidosYa Market (adic. Noelia)" },
-    { id:"ic24", cardId:"icbc1544", monto:400.00,    fecha:"2026-06-02", cuotas:1, desc:"PedidosYa propina (adic. Noelia)" },
-    { id:"ic25", cardId:"icbc1544", monto:1098.30,   fecha:"2026-06-02", cuotas:1, desc:"PedidosYa Extra (adic. Noelia)" },
-    { id:"ic26", cardId:"icbc1544", monto:13609.00,  fecha:"2026-06-17", cuotas:1, desc:"PedidosYa Haedo (adic. Noelia)" },
-    { id:"ic27", cardId:"icbc1544", monto:23129.00,  fecha:"2026-06-17", cuotas:1, desc:"PedidosYa KFC (adic. Noelia)" },
-    { id:"ic28", cardId:"icbc1544", monto:14658.00,  fecha:"2026-06-18", cuotas:1, fijo:true, desc:"Personal (adic. Noelia)" },
-    { id:"ic29", cardId:"icbc1544", monto:20194.99,  fecha:"2026-06-18", cuotas:1, fijo:true, desc:"Personal (adic. Noelia)" },
-    { id:"ic30", cardId:"icbc1544", monto:15509.00,  fecha:"2026-06-18", cuotas:1, desc:"PedidosYa Panchería (adic. Noelia)" },
-    { id:"ic31", cardId:"icbc1544", monto:25009.00,  fecha:"2026-06-18", cuotas:1, desc:"PedidosYa Starbucks (adic. Noelia)" },
-    { id:"ic32", cardId:"icbc1544", monto:24851.00,  fecha:"2026-06-19", cuotas:1, desc:"PedidosYa Carrefour (adic. Noelia)" },
-
-    { id:"u1",  cardId:"icbc1544", monto:14.31, fecha:"2026-05-21", cuotas:1, usd:true, desc:"Google Ads" },
-    { id:"u2",  cardId:"icbc1544", monto:14.21, fecha:"2026-05-26", cuotas:1, usd:true, desc:"Google Ads" },
-    { id:"u3",  cardId:"icbc1544", monto:7.67,  fecha:"2026-06-01", cuotas:1, usd:true, desc:"Google Ads" },
-    { id:"u4",  cardId:"icbc1544", monto:4.79,  fecha:"2026-06-02", cuotas:1, usd:true, desc:"YouTube Premium" },
-    { id:"u5",  cardId:"icbc1544", monto:13.96, fecha:"2026-06-04", cuotas:1, usd:true, desc:"Google Ads" },
-    { id:"u6",  cardId:"icbc1544", monto:13.86, fecha:"2026-06-06", cuotas:1, usd:true, desc:"Google Ads" },
-    { id:"u7",  cardId:"icbc1544", monto:14.00, fecha:"2026-06-11", cuotas:1, usd:true, desc:"Google Ads" },
-    { id:"u8",  cardId:"icbc1544", monto:13.99, fecha:"2026-06-16", cuotas:1, usd:true, desc:"Google Ads" },
-    { id:"u9",  cardId:"icbc1544", monto:20.00, fecha:"2026-06-18", cuotas:1, usd:true, desc:"OpenAI ChatGPT" },
-    { id:"u10", cardId:"icbc1544", monto:13.81, fecha:"2026-06-19", cuotas:1, usd:true, desc:"Google Ads" }
-  ]
-};
+/* Los datos viven en Firebase (sincronizados y privados, detrás del login).
+   El SEED queda vacío a propósito: la app baja todo de la nube al iniciar sesión. */
+const SEED = { cards: [], exps: [] };
 
 let editingCardId = null;
 let pickedColor = COLORS[0];
