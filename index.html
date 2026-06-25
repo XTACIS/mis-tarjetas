@@ -149,7 +149,7 @@
 </div>
 
 <header class="top">
-  <h1>Mis <span>Tarjetas</span> <small style="font-size:11px;color:var(--muted);font-weight:600;vertical-align:middle">V12</small></h1>
+  <h1>Mis <span>Tarjetas</span> <small style="font-size:11px;color:var(--muted);font-weight:600;vertical-align:middle">V14</small></h1>
   <div style="display:flex;align-items:center;gap:12px">
     <span id="todayLbl" style="font-size:12px;color:var(--muted)"></span>
     <button onclick="window.fbLogout && window.fbLogout()" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer">Salir</button>
@@ -600,11 +600,14 @@ function recommend(){
   const now = new Date();
   const scored = state.cards.map(c=>{
     const close = nextClose(c.cierre, now);            // próximo cierre
-    const due = dueForClose(close, c.cierre, c.venc);  // su vencimiento
     const diasCierre = daysBetween(now, close);
+    // Una compra de HOY cae en el ciclo que cierra DESPUÉS de hoy. Si la tarjeta cierra hoy,
+    // se considera ya cerrada => la compra entra en el ciclo siguiente (máxima financiación).
+    const closeCompra = diasCierre <= 0 ? clampDay(close.getFullYear(), close.getMonth()+1, c.cierre) : close;
+    const due = dueForClose(closeCompra, c.cierre, c.venc);  // cuándo pagarías esa compra
     const diasFin = daysBetween(now, due);             // financiación si comprás HOY
-    // Si esperás a que cierre y comprás apenas pasa el cierre: cae en el ciclo siguiente
-    const close2 = clampDay(close.getFullYear(), close.getMonth()+1, c.cierre);
+    // Si en cambio esperás a que cierre y comprás apenas pasa: cae en el ciclo siguiente al de la compra de hoy
+    const close2 = clampDay(closeCompra.getFullYear(), closeCompra.getMonth()+1, c.cierre);
     const due2 = dueForClose(close2, c.cierre, c.venc);
     const finSiEsperas = daysBetween(now, due2);
     const disp = c.limite ? Math.max(0, c.limite - committedBalance(c)) : null;
@@ -966,10 +969,8 @@ function renderCards(){
       <div class="num">${c.ult4?("•••• •••• •••• "+escapeHtml(c.ult4)):"•••• •••• •••• ••••"}</div>
       <div class="row" style="margin-top:10px"><span>Cierre día ${c.cierre} <span style="opacity:.8">(${txtC})</span></span><span>Vence día ${c.venc} <span style="opacity:.8">(${txtV})</span></span></div>
       <div class="row"><span>A pagar (vence ${due.getDate()}/${due.getMonth()+1})</span><b>${fmt(comprometido)}</b></div>
-      <div class="row"${pagado?' style="opacity:.6"':''}>
-        <span><label style="cursor:pointer;display:inline-flex;align-items:center;gap:5px"><input type="checkbox" ${pagado?"checked":""} onchange="event.stopPropagation();togglePagado('${c.id}')"> ${saldoLbl}${pagado?" · pagado":""}</label></span>
-        <span${pagado?' style="text-decoration:line-through"':''}>${fmt(c.saldoCiclo||0)}</span>
-      </div>
+      <div class="row"${pagado?' style="opacity:.55"':''}><span>${saldoLbl}</span><span${pagado?' style="text-decoration:line-through"':''}>${fmt(c.saldoCiclo||0)}</span></div>
+      <div style="margin:3px 0 5px"><button onclick="event.stopPropagation();togglePagado('${c.id}')" style="font-size:11px;font-weight:700;border:none;border-radius:999px;padding:4px 12px;cursor:pointer;background:${pagado?'#16a34a':'rgba(0,0,0,.3)'};color:#fff">${pagado?'✓ Pagado':'Marcar como pagado'}</button></div>
       ${nuevos>0?`<div class="row"><span>+ consumos del ${pagado?"ciclo nuevo":"día"}</span><span>${fmt(nuevos)}</span></div>`:""}
       ${c.limite?`<div class="row"><span>Disponible</span><b>${fmt(Math.max(0,c.limite-comprometido))}</b></div>
       <div class="bar"><i style="width:${pct}%"></i></div>`:""}
