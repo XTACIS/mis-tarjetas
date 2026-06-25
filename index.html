@@ -1253,32 +1253,30 @@ function parseCuota(desc){
 }
 
 /* ================= MERCADO PAGO (carga manual vía IA de MP) ================= */
-const PROMPT_MP = `Actuá como mi asistente de Mercado Pago. Necesito el estado COMPLETO y ACTUAL de mi tarjeta de crédito de Mercado Pago. Respondé SOLO con este formato, sin texto adicional, sin explicaciones ni símbolos de más.
-
+const PROMPT_MP = `Necesito el estado COMPLETO y ACTUAL de mi tarjeta de crédito de Mercado Pago.
+Respondé SOLO con este formato, sin texto adicional.
 Primero, los datos del último resumen que cerró:
 CIERRE: dd/mm/aaaa
 VENCE: dd/mm/aaaa
-TOTAL: monto total a pagar de ese resumen (solo el número, con punto decimal, sin separador de miles)
-
+TOTAL: monto total a pagar de ese resumen (solo número, con punto decimal y sin separador de miles)
 Después, UNA LÍNEA POR CADA CONSUMO, separando los campos con una barra |, así:
-dd/mm/aaaa | nombre real del comercio | cuota actual/total | monto de la cuota de este mes
-
-MUY IMPORTANTE — incluí TODOS los consumos, en dos grupos:
+dd/mm/aaaa | producto o compra identificada | cuota actual/total | monto de la cuota de este mes
+Incluí TODOS los consumos en dos grupos:
 1) Los consumos del último resumen que cerró.
-2) Los consumos NUEVOS posteriores al cierre (los que todavía no cerraron y van a entrar en el próximo resumen). No omitas ninguno.
-
+2) Los consumos nuevos posteriores al cierre que van al próximo resumen.
 Reglas:
-- Comercio: poné el nombre REAL tal cual figura en el detalle del movimiento (ej: GTcosmética, Tendex, Amalfi, Nakstuff, OHventas). NO pongas "Mercado Libre" para todo; usá el comercio concreto de cada compra.
-- Montos: solo el número, con punto como decimal y SIN separador de miles (ej: 33938.00).
-- Si la compra es en un solo pago, poné 1/1.
-
-Ejemplo de cómo tiene que quedar la respuesta:
+- Si el consumo corresponde a una compra en Mercado Libre, no pongas Mercado Libre genérico: identificá la compra por producto o conjunto de productos de esa operación.
+- Si no se puede identificar el producto exacto, indicá la compra de la forma más específica posible según el historial.
+- Montos: solo número, con punto decimal y sin separador de miles.
+- Si es un solo pago, poné 1/1.
+- No omitas cuotas que siguen vigentes de compras anteriores.
+Ejemplo:
 CIERRE: 05/06/2026
 VENCE: 10/06/2026
 TOTAL: 4034.22
-30/04/2026 | GTcosmética | 2/3 | 18706.33
-18/05/2026 | Tendex | 1/1 | 56025.00
-14/06/2026 | Carrefour | 1/1 | 28400.00`;
+30/05/2026 | CPU Cooler Darkflash E400 Plus ARGB + ventiladores Solarmax pack x2 | 1/3 | 26633.34
+26/05/2026 | Anafe eléctrico Winco W40 + pava eléctrica Codini | 1/6 | 3499.85
+06/06/2026 | NIKE ALTO PALERMO | 1/6 | 74999.85`;
 
 function copiarPromptMP(){
   const fin = ()=>toast("Prompt copiado ✓ Pegáselo a la IA de MP");
@@ -1316,6 +1314,7 @@ function mpCuotas(s){
 }
 function parseMP(txt){
   const out={cierre:null, venc:null, cierreISO:null, total:0, consumos:[]};
+  const vistas={};   // para no duplicar: la IA suele listar cada cuota futura de una misma compra
   (txt||"").split(/\r?\n/).forEach(line=>{
     const L=line.trim(); if(!L) return;
     if(/^cierre/i.test(L)){ const f=mpFecha(L); if(f){ out.cierreISO=f; out.cierre=+f.split("-")[2]; } return; }
@@ -1324,10 +1323,17 @@ function parseMP(txt){
     if(L.indexOf("|")>-1){
       const p=L.split("|").map(s=>s.trim());
       const fecha=mpFecha(p[0]); if(!fecha) return;            // si no arranca con fecha, no es consumo
-      const comercio=(p[1]||"Consumo MP").slice(0,40);
+      const comercio=(p[1]||"Consumo MP").slice(0,55);
       const cuotas=mpCuotas(p[2]);
       const cuotaMonto=mpMonto(p[3]!=null?p[3]:p[p.length-1]);
-      if(cuotaMonto>0) out.consumos.push({fecha, comercio, cuotas, cuotaMonto});
+      if(cuotaMonto<=0) return;
+      // Una compra = (fecha + total de cuotas + monto de la cuota). Si ya la vimos en otra cuota
+      // (ej. 1/3 y 2/3 de la misma compra), la ignoramos: la app proyecta las cuotas sola. No uso
+      // el texto en la clave porque la IA puede redactar la descripción distinto entre cuotas.
+      const clave = fecha+"|"+cuotas+"|"+Math.round(cuotaMonto);
+      if(vistas[clave]) return;
+      vistas[clave]=true;
+      out.consumos.push({fecha, comercio, cuotas, cuotaMonto});
     }
   });
   return out;
