@@ -1253,23 +1253,32 @@ function parseCuota(desc){
 }
 
 /* ================= MERCADO PAGO (carga manual vía IA de MP) ================= */
-const PROMPT_MP = `Actuá como mi asistente de Mercado Pago. Pasame los datos de mi resumen de tarjeta de crédito ACTUAL (el último que cerró) en este formato EXACTO. No agregues texto, explicaciones ni símbolos de más.
+const PROMPT_MP = `Actuá como mi asistente de Mercado Pago. Necesito el estado COMPLETO y ACTUAL de mi tarjeta de crédito de Mercado Pago. Respondé SOLO con este formato, sin texto adicional, sin explicaciones ni símbolos de más.
 
+Primero, los datos del último resumen que cerró:
 CIERRE: dd/mm/aaaa
 VENCE: dd/mm/aaaa
-TOTAL: monto total a pagar (solo el número, con punto decimal, sin separador de miles)
+TOTAL: monto total a pagar de ese resumen (solo el número, con punto decimal, sin separador de miles)
 
-Después una línea por CADA consumo del período, separando los campos con una barra |, así:
-dd/mm/aaaa | nombre del comercio | cuota actual/total | monto de la cuota de este mes
+Después, UNA LÍNEA POR CADA CONSUMO, separando los campos con una barra |, así:
+dd/mm/aaaa | nombre real del comercio | cuota actual/total | monto de la cuota de este mes
 
-Reglas de los montos: solo el número, con punto como decimal y SIN separador de miles (ej: 33938.00). Si la compra es en un solo pago poné 1/1.
+MUY IMPORTANTE — incluí TODOS los consumos, en dos grupos:
+1) Los consumos del último resumen que cerró.
+2) Los consumos NUEVOS posteriores al cierre (los que todavía no cerraron y van a entrar en el próximo resumen). No omitas ninguno.
+
+Reglas:
+- Comercio: poné el nombre REAL tal cual figura en el detalle del movimiento (ej: GTcosmética, Tendex, Amalfi, Nakstuff, OHventas). NO pongas "Mercado Libre" para todo; usá el comercio concreto de cada compra.
+- Montos: solo el número, con punto como decimal y SIN separador de miles (ej: 33938.00).
+- Si la compra es en un solo pago, poné 1/1.
 
 Ejemplo de cómo tiene que quedar la respuesta:
 CIERRE: 05/06/2026
 VENCE: 10/06/2026
 TOTAL: 4034.22
-30/04/2026 | MercadoLibre | 2/3 | 33938.00
-18/05/2026 | Tendex | 1/1 | 56025.00`;
+30/04/2026 | GTcosmética | 2/3 | 18706.33
+18/05/2026 | Tendex | 1/1 | 56025.00
+14/06/2026 | Carrefour | 1/1 | 28400.00`;
 
 function copiarPromptMP(){
   const fin = ()=>toast("Prompt copiado ✓ Pegáselo a la IA de MP");
