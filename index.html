@@ -149,7 +149,7 @@
 </div>
 
 <header class="top">
-  <h1>Mis <span>Tarjetas</span></h1>
+  <h1>Mis <span>Tarjetas</span> <small style="font-size:11px;color:var(--muted);font-weight:600;vertical-align:middle">V9</small></h1>
   <div style="display:flex;align-items:center;gap:12px">
     <span id="todayLbl" style="font-size:12px;color:var(--muted)"></span>
     <button onclick="window.fbLogout && window.fbLogout()" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer">Salir</button>
@@ -224,8 +224,16 @@
       <textarea id="mpBox" placeholder="Pegá acá la respuesta de la IA de Mercado Pago…" style="width:100%;min-height:120px;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg2,#0e1525);color:var(--fg,#e8eef7);font-size:13px;font-family:inherit;resize:vertical"></textarea>
       <button class="primary" onclick="aplicarMP()" style="margin-top:10px">✅ Actualizar Mercado Pago</button>
     </div>
-    <label style="margin-top:0">Filtrar por tarjeta</label>
-    <select id="filtroTarjeta" onchange="renderExps()" style="margin-bottom:14px"></select>
+    <div class="field2" style="margin-bottom:14px">
+      <div>
+        <label style="margin-top:0">Filtrar por tarjeta</label>
+        <select id="filtroTarjeta" onchange="renderExps()"></select>
+      </div>
+      <div>
+        <label style="margin-top:0">Filtrar por rubro</label>
+        <select id="filtroRubro" onchange="renderExps()"></select>
+      </div>
+    </div>
     <div class="card"><div id="listaConsumos"></div></div>
   </div>
 </section>
@@ -947,8 +955,19 @@ function renderExps(){
     sel.value = [...sel.options].some(o=>o.value===prev) ? prev : "todas";
   }
   const filtro = sel ? sel.value : "todas";
+  // Filtro por rubro: poblar con las categorías que tienen consumos
+  const selR = document.getElementById("filtroRubro");
+  if(selR){
+    const prevR = selR.value || "todos";
+    const usados = {}; state.exps.forEach(e=>{ usados[categoria(e).id]=true; });
+    selR.innerHTML = `<option value="todos">Todos los rubros</option>` +
+      CATEGORIAS.filter(c=>usados[c.id]).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join("");
+    selR.value = [...selR.options].some(o=>o.value===prevR) ? prevR : "todos";
+  }
+  const filtroR = selR ? selR.value : "todos";
   let list = state.exps.slice();
   if(filtro!=="todas") list = list.filter(e=>e.cardId===filtro);
+  if(filtroR!=="todos") list = list.filter(e=>categoria(e).id===filtroR);
   if(!list.length){ el.innerHTML = `<div class="empty">${state.exps.length?"No hay consumos para esta tarjeta.":"No registraste consumos."}</div>`; return; }
   const sorted = list.sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
   const groups = {};
@@ -975,7 +994,10 @@ function renderExps(){
             </select>
           </div>
         </div>
-        <div class="amt"${e.usd?' style="color:#22c55e"':''}>${e.usd?fmtUSD(e.monto):fmt(e.monto)}</div>
+        ${(()=>{ const n=Math.max(1,e.cuotas||1);
+          if(e.usd) return `<div class="amt" style="color:#22c55e">${fmtUSD(e.monto)}</div>`;
+          if(n>1) return `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px"><div class="amt">${fmt(e.monto/n)}</div><span style="font-size:10.5px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:2px 7px;white-space:nowrap">Total ${fmt(e.monto)}</span></div>`;
+          return `<div class="amt">${fmt(e.monto)}</div>`; })()}
       </div>`;
     }).join("");
     return `<div class="mes-h">${MESES_L[m].toUpperCase()} ${y}</div>${itemsHtml}`;
