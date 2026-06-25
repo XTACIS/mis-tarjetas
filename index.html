@@ -1308,9 +1308,10 @@ function mpMonto(s){
   else if(x.indexOf(".")>-1){ const p=x.split("."); if(p[p.length-1].length===3) x=p.join(""); }
   return parseFloat(x)||0;
 }
-function mpCuotas(s){
+function mpCuotaInfo(s){
   const m=(s||"").match(/(\d+)\s*(?:de|\/)\s*(\d+)/i);
-  return m ? Math.max(1, parseInt(m[2],10)) : 1;
+  if(m) return { act:Math.max(1,parseInt(m[1],10)), tot:Math.max(1,parseInt(m[2],10)) };
+  return { act:1, tot:1 };
 }
 function parseMP(txt){
   const out={cierre:null, venc:null, cierreISO:null, total:0, consumos:[]};
@@ -1324,16 +1325,16 @@ function parseMP(txt){
       const p=L.split("|").map(s=>s.trim());
       const fecha=mpFecha(p[0]); if(!fecha) return;            // si no arranca con fecha, no es consumo
       const comercio=(p[1]||"Consumo MP").slice(0,55);
-      const cuotas=mpCuotas(p[2]);
+      const cu=mpCuotaInfo(p[2]);
       const cuotaMonto=mpMonto(p[3]!=null?p[3]:p[p.length-1]);
       if(cuotaMonto<=0) return;
       // Una compra = (fecha + total de cuotas + monto de la cuota). Si ya la vimos en otra cuota
       // (ej. 1/3 y 2/3 de la misma compra), la ignoramos: la app proyecta las cuotas sola. No uso
       // el texto en la clave porque la IA puede redactar la descripción distinto entre cuotas.
-      const clave = fecha+"|"+cuotas+"|"+Math.round(cuotaMonto);
+      const clave = fecha+"|"+cu.tot+"|"+Math.round(cuotaMonto);
       if(vistas[clave]) return;
       vistas[clave]=true;
-      out.consumos.push({fecha, comercio, cuotas, cuotaMonto});
+      out.consumos.push({fecha, comercio, cuotas:cu.tot, act:cu.act, cuotaMonto});
     }
   });
   return out;
@@ -1356,7 +1357,7 @@ function aplicarMP(){
   // Reemplazo limpio de los consumos de MP por los del resumen pegado
   state.exps = state.exps.filter(e=>e.cardId!==mp.id);
   r.consumos.forEach((c,i)=>{
-    const desc = c.cuotas>1 ? (c.comercio+" · cuota "+c.cuotas+"/"+c.cuotas) : c.comercio;
+    const desc = c.cuotas>1 ? (c.comercio+" · cuota "+(c.act||1)+"/"+c.cuotas) : c.comercio;
     state.exps.push({ id:"mp_"+(r.cierreISO||"per")+"_"+i, cardId:mp.id, monto:c.cuotaMonto*c.cuotas, fecha:c.fecha, cuotas:c.cuotas, desc:desc });
   });
   save(); render();
