@@ -149,7 +149,7 @@
 </div>
 
 <header class="top">
-  <h1>Mis <span>Tarjetas</span> <small style="font-size:11px;color:var(--muted);font-weight:600;vertical-align:middle">V9</small></h1>
+  <h1>Mis <span>Tarjetas</span> <small style="font-size:11px;color:var(--muted);font-weight:600;vertical-align:middle">V12</small></h1>
   <div style="display:flex;align-items:center;gap:12px">
     <span id="todayLbl" style="font-size:12px;color:var(--muted)"></span>
     <button onclick="window.fbLogout && window.fbLogout()" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer">Salir</button>
@@ -555,9 +555,28 @@ function nuevosDelCiclo(card){
   return sum;
 }
 
-// A pagar en el PRÓXIMO vencimiento de la tarjeta = saldo del ciclo (Excel) + consumos nuevos del día
+// ¿El resumen cargado (saldoCiclo) todavía no venció? Si ya venció, lo asumimos pagado.
+function resumenVigente(card){
+  if(!card.saldoFecha) return true;
+  const cierre = new Date(card.saldoFecha+"T00:00:00");
+  const due = dueForClose(cierre, card.cierre, card.venc);
+  return startOfDay(new Date()) <= startOfDay(due);
+}
+// ¿El resumen actual está marcado pagado? Default: si ya venció se asume pagado; el check manual manda.
+function saldoKey(card){ return card.saldoFecha || "manual"; }
+function resumenPagado(card){
+  if(card.pago && card.pago.fecha === saldoKey(card)) return !!card.pago.pagado;
+  return !resumenVigente(card);
+}
+function togglePagado(id){
+  const c = state.cards.find(x=>x.id===id); if(!c) return;
+  c.pago = { fecha: saldoKey(c), pagado: !resumenPagado(c) };
+  save(); render();
+}
+// A pagar en el PRÓXIMO vencimiento = saldo del ciclo (si no está pagado) + consumos nuevos del día
 function committedBalance(card){
-  return (card.saldoCiclo||0) + nuevosDelCiclo(card);
+  const base = resumenPagado(card) ? 0 : (card.saldoCiclo||0);
+  return base + nuevosDelCiclo(card);
 }
 // alias usado en la vista (lo consumido del ciclo en curso)
 function currentCycleUsage(card){ return committedBalance(card); }
@@ -620,8 +639,11 @@ function render(){
   if(nm.detail.length){
     bc.style.display = "block";
     const maxA = Math.max(...nm.detail.map(d=>d.amount));
-    const sorted = nm.detail.slice().sort((a,b)=> b.amount - a.amount);
-    bc.innerHTML = `<h2 style="margin:2px 0 14px">Pago del mes por tarjeta</h2>` + sorted.map(d=>{
+    // Agrupar las tarjetas por el mes en que vencen
+    const sorted = nm.detail.slice().sort((a,b)=> (a.due-b.due) || (b.amount-a.amount));
+    const grupos = {};
+    sorted.forEach(d=>{ const k=d.due.getFullYear()+"-"+String(d.due.getMonth()).padStart(2,"0"); (grupos[k]=grupos[k]||[]).push(d); });
+    const itemHtml = d=>{
       const w = maxA>0 ? Math.max(4, Math.round(d.amount/maxA*100)) : 0;
       const pct = nm.total>0 ? Math.round(d.amount/nm.total*100) : 0;
       const usdCard = state.exps.filter(e=>e.usd && e.cardId===d.card.id).reduce((s,e)=>s+e.monto,0);
@@ -638,8 +660,15 @@ function render(){
           <div style="font-size:11px;color:var(--muted);margin-top:3px">${pct}% del total${usdCard>0?` · <span style="color:#22c55e">+ ${fmtUSD(usdCard)}</span>`:""}</div>
         </div>
       </div>`;
-    }).join("") + `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px;display:flex;justify-content:space-between;align-items:baseline">
-        <span style="font-size:14px;color:var(--muted)">TOTAL del mes</span>
+    };
+    bc.innerHTML = `<h2 style="margin:2px 0 14px">Pago del mes por tarjeta</h2>` +
+      Object.keys(grupos).sort().map(k=>{
+        const items = grupos[k];
+        const sub = items.reduce((s,d)=>s+d.amount,0);
+        const lbl = MESES_L[parseInt(k.split("-")[1],10)].toUpperCase()+" "+k.split("-")[0];
+        return `<div class="mes-h" style="display:flex;justify-content:space-between;align-items:baseline"><span>${lbl}</span><span style="color:var(--accent);font-size:13px">${fmt(sub)}</span></div>` + items.map(itemHtml).join("");
+      }).join("") + `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="font-size:14px;color:var(--muted)">TOTAL general</span>
         <b style="font-size:20px;color:var(--accent)">${fmt(nm.total)}${usdTotal>0?` <span style="font-size:14px;color:#22c55e">+ ${fmtUSD(usdTotal)}</span>`:""}</b>
       </div>`;
   } else {
@@ -929,6 +958,7 @@ function renderCards(){
     if(dC<=0) badge = `<span class="badge b-bad">Cierra hoy</span>`;
     else if(dC<=3) badge = `<span class="badge b-warn">Cierra en ${dC}d</span>`;
     else badge = `<span class="badge b-info">Cierra en ${dC}d</span>`;
+    const pagado = resumenPagado(c);
     const saldoLbl = c.saldoFecha ? `Saldo del ciclo (al ${c.saldoFecha.slice(8,10)}/${c.saldoFecha.slice(5,7)})` : "Saldo del ciclo";
     return `<div class="tcard" style="background:linear-gradient(135deg,${c.color},${shade(c.color,-25)})">
       ${tcardHead(c,true)}
@@ -936,8 +966,11 @@ function renderCards(){
       <div class="num">${c.ult4?("•••• •••• •••• "+escapeHtml(c.ult4)):"•••• •••• •••• ••••"}</div>
       <div class="row" style="margin-top:10px"><span>Cierre día ${c.cierre} <span style="opacity:.8">(${txtC})</span></span><span>Vence día ${c.venc} <span style="opacity:.8">(${txtV})</span></span></div>
       <div class="row"><span>A pagar (vence ${due.getDate()}/${due.getMonth()+1})</span><b>${fmt(comprometido)}</b></div>
-      <div class="row"><span>${saldoLbl}</span><span>${fmt(c.saldoCiclo||0)}</span></div>
-      ${nuevos>0?`<div class="row"><span>+ consumos del día</span><span>${fmt(nuevos)}</span></div>`:""}
+      <div class="row"${pagado?' style="opacity:.6"':''}>
+        <span><label style="cursor:pointer;display:inline-flex;align-items:center;gap:5px"><input type="checkbox" ${pagado?"checked":""} onchange="event.stopPropagation();togglePagado('${c.id}')"> ${saldoLbl}${pagado?" · pagado":""}</label></span>
+        <span${pagado?' style="text-decoration:line-through"':''}>${fmt(c.saldoCiclo||0)}</span>
+      </div>
+      ${nuevos>0?`<div class="row"><span>+ consumos del ${pagado?"ciclo nuevo":"día"}</span><span>${fmt(nuevos)}</span></div>`:""}
       ${c.limite?`<div class="row"><span>Disponible</span><b>${fmt(Math.max(0,c.limite-comprometido))}</b></div>
       <div class="bar"><i style="width:${pct}%"></i></div>`:""}
       <div style="margin-top:8px">${badge}</div>
