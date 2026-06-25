@@ -211,6 +211,7 @@
 <section class="view" id="v-consumos">
   <div class="wrap">
     <h2>Consumos cargados</h2>
+    <button class="primary" onclick="chequearConsumos()" style="margin-bottom:14px">🔄 Buscar consumos nuevos</button>
     <label style="margin-top:0">Filtrar por tarjeta</label>
     <select id="filtroTarjeta" onchange="renderExps()" style="margin-bottom:14px"></select>
     <div class="card"><div id="listaConsumos"></div></div>
@@ -342,6 +343,8 @@
     </div>
   </div>
 </div>
+
+<button class="fab" id="fab" onclick="openExpModal()" title="Registrar consumo nuevo">+</button>
 
 <!-- ===== MODAL CONSUMO ===== -->
 <div class="modal" id="expModal">
@@ -1219,6 +1222,13 @@ function delExp(id){
   save(); render(); toast("Consumo borrado");
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+const CHEQUEAR_URL = "https://script.google.com/macros/s/AKfycbzE2Vn9NSAPgjtRpZk6SqFEgw68BSW-JyQewAZMyLCVj_VQpvH7lxgqZ13ergGdqJMG/exec";
+function chequearConsumos(){
+  toast("Buscando consumos nuevos…");
+  fetch(CHEQUEAR_URL, {mode:"no-cors"})
+    .then(function(){ setTimeout(function(){ toast("Listo ✓ revisá tus consumos"); }, 7000); })
+    .catch(function(){ toast("No se pudo conectar al robot"); });
+}
 function toggleFijo(id){
   const e = state.exps.find(x=>x.id===id);
   if(e){ e.fijo = !e.fijo; save(); render(); }
