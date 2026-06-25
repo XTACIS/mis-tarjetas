@@ -212,6 +212,18 @@
   <div class="wrap">
     <h2>Consumos cargados</h2>
     <button class="primary" onclick="chequearConsumos()" style="margin-bottom:14px">🔄 Buscar consumos nuevos</button>
+
+    <!-- ===== ACTUALIZAR MERCADO PAGO (vía IA de MP) ===== -->
+    <div class="card" style="margin-bottom:16px;border:1px solid #00b1ea66">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <b style="color:#00b1ea;font-size:15px">Mercado&nbsp;Pago</b>
+        <small style="color:var(--muted)">— se actualiza a mano, en 10 segundos</small>
+      </div>
+      <p class="hint" style="margin:2px 0 10px">1) Copiá el prompt. 2) Pegáselo a la IA de MP en tu celu. 3) Pegá acá lo que te responda y tocá Actualizar.</p>
+      <button class="primary" onclick="copiarPromptMP()" style="margin-bottom:10px;background:#00b1ea;border-color:#00b1ea">📋 Copiar prompt para la IA de MP</button>
+      <textarea id="mpBox" placeholder="Pegá acá la respuesta de la IA de Mercado Pago…" style="width:100%;min-height:120px;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg2,#0e1525);color:var(--fg,#e8eef7);font-size:13px;font-family:inherit;resize:vertical"></textarea>
+      <button class="primary" onclick="aplicarMP()" style="margin-top:10px">✅ Actualizar Mercado Pago</button>
+    </div>
     <label style="margin-top:0">Filtrar por tarjeta</label>
     <select id="filtroTarjeta" onchange="renderExps()" style="margin-bottom:14px"></select>
     <div class="card"><div id="listaConsumos"></div></div>
@@ -1238,6 +1250,103 @@ function parseCuota(desc){
   const m = (desc||"").match(/cuota\s*(\d+)\s*\/\s*(\d+)/i);
   if(m) return {act:m[1], tot:m[2], limpia:(desc.replace(/[·\-\s]*cuota\s*\d+\s*\/\s*\d+/i,"").trim()||"Consumo")};
   return {act:null, tot:null, limpia:desc};
+}
+
+/* ================= MERCADO PAGO (carga manual vía IA de MP) ================= */
+const PROMPT_MP = `Actuá como mi asistente de Mercado Pago. Pasame los datos de mi resumen de tarjeta de crédito ACTUAL (el último que cerró) en este formato EXACTO. No agregues texto, explicaciones ni símbolos de más.
+
+CIERRE: dd/mm/aaaa
+VENCE: dd/mm/aaaa
+TOTAL: monto total a pagar (solo el número, con punto decimal, sin separador de miles)
+
+Después una línea por CADA consumo del período, separando los campos con una barra |, así:
+dd/mm/aaaa | nombre del comercio | cuota actual/total | monto de la cuota de este mes
+
+Reglas de los montos: solo el número, con punto como decimal y SIN separador de miles (ej: 33938.00). Si la compra es en un solo pago poné 1/1.
+
+Ejemplo de cómo tiene que quedar la respuesta:
+CIERRE: 05/06/2026
+VENCE: 10/06/2026
+TOTAL: 4034.22
+30/04/2026 | MercadoLibre | 2/3 | 33938.00
+18/05/2026 | Tendex | 1/1 | 56025.00`;
+
+function copiarPromptMP(){
+  const fin = ()=>toast("Prompt copiado ✓ Pegáselo a la IA de MP");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(PROMPT_MP).then(fin).catch(()=>copiaFallback(PROMPT_MP,fin));
+  } else copiaFallback(PROMPT_MP, fin);
+}
+function copiaFallback(txt, fin){
+  const t=document.createElement("textarea"); t.value=txt; t.style.position="fixed"; t.style.opacity="0";
+  document.body.appendChild(t); t.select();
+  try{ document.execCommand("copy"); fin(); }catch(e){ toast("Copiá el prompt a mano"); }
+  document.body.removeChild(t);
+}
+
+function mpFecha(s){
+  const m = (s||"").match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if(!m) return null;
+  let d=+m[1], mm=+m[2], yy=m[3];
+  let year = yy ? (yy.length===2 ? 2000+(+yy) : +yy) : null;
+  if(!year){ const now=new Date(); year=now.getFullYear(); if(mm > now.getMonth()+1) year--; }
+  if(mm<1||mm>12||d<1||d>31) return null;
+  return year+"-"+String(mm).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+}
+function mpMonto(s){
+  if(s==null) return 0;
+  let x=(""+s).replace(/[^\d.,]/g,"");
+  if(x.indexOf(",")>-1 && x.indexOf(".")>-1) x=x.replace(/\./g,"").replace(",",".");
+  else if(x.indexOf(",")>-1) x=x.replace(",",".");
+  else if(x.indexOf(".")>-1){ const p=x.split("."); if(p[p.length-1].length===3) x=p.join(""); }
+  return parseFloat(x)||0;
+}
+function mpCuotas(s){
+  const m=(s||"").match(/(\d+)\s*(?:de|\/)\s*(\d+)/i);
+  return m ? Math.max(1, parseInt(m[2],10)) : 1;
+}
+function parseMP(txt){
+  const out={cierre:null, venc:null, cierreISO:null, total:0, consumos:[]};
+  (txt||"").split(/\r?\n/).forEach(line=>{
+    const L=line.trim(); if(!L) return;
+    if(/^cierre/i.test(L)){ const f=mpFecha(L); if(f){ out.cierreISO=f; out.cierre=+f.split("-")[2]; } return; }
+    if(/^(vence|vencimiento|venc)/i.test(L)){ const f=mpFecha(L); if(f) out.venc=+f.split("-")[2]; return; }
+    if(/^total/i.test(L)){ out.total=mpMonto(L); return; }
+    if(L.indexOf("|")>-1){
+      const p=L.split("|").map(s=>s.trim());
+      const fecha=mpFecha(p[0]); if(!fecha) return;            // si no arranca con fecha, no es consumo
+      const comercio=(p[1]||"Consumo MP").slice(0,40);
+      const cuotas=mpCuotas(p[2]);
+      const cuotaMonto=mpMonto(p[3]!=null?p[3]:p[p.length-1]);
+      if(cuotaMonto>0) out.consumos.push({fecha, comercio, cuotas, cuotaMonto});
+    }
+  });
+  return out;
+}
+function aplicarMP(){
+  const box=document.getElementById("mpBox");
+  const r=parseMP(box.value);
+  if(!r.consumos.length && !r.total){ toast("No pude leer los datos. Revisá que el formato sea el del prompt."); return; }
+  let mp = state.cards.find(c=>c.id==="mpcredito") || state.cards.find(c=>(c.banco||"").toLowerCase()==="mercadopago");
+  const hoy=new Date(), hoyISO=hoy.getFullYear()+"-"+String(hoy.getMonth()+1).padStart(2,"0")+"-"+String(hoy.getDate()).padStart(2,"0");
+  if(!mp){
+    mp={id:"mpcredito", nombre:"Mercado Pago", banco:"mercadopago", red:"Mastercard", ult4:"", cierre:r.cierre||5, venc:r.venc||10, limite:0, saldoCiclo:r.total||0, saldoFecha:r.cierreISO||hoyISO, color:"#00b1ea"};
+    state.cards.push(mp);
+  } else {
+    if(r.cierre) mp.cierre=r.cierre;
+    if(r.venc) mp.venc=r.venc;
+    mp.saldoCiclo=r.total||0;
+    mp.saldoFecha=r.cierreISO||mp.saldoFecha||hoyISO;
+  }
+  // Reemplazo limpio de los consumos de MP por los del resumen pegado
+  state.exps = state.exps.filter(e=>e.cardId!==mp.id);
+  r.consumos.forEach((c,i)=>{
+    const desc = c.cuotas>1 ? (c.comercio+" · cuota "+c.cuotas+"/"+c.cuotas) : c.comercio;
+    state.exps.push({ id:"mp_"+(r.cierreISO||"per")+"_"+i, cardId:mp.id, monto:c.cuotaMonto*c.cuotas, fecha:c.fecha, cuotas:c.cuotas, desc:desc });
+  });
+  save(); render();
+  if(box) box.value="";
+  toast("Mercado Pago actualizado: "+r.consumos.length+" consumos ✓");
 }
 
 /* ================= INIT ================= */
